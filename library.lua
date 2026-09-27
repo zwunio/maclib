@@ -19,7 +19,6 @@ local LocalPlayer = Players.LocalPlayer
 local isMobile = UserInputService.TouchEnabled and not UserInputService.MouseEnabled
 local windowState
 local acrylicBlur
-local hasGlobalSetting
 local tabs = {}
 local currentTabInstance = nil
 local tabIndex = 0
@@ -34,7 +33,6 @@ searchIcon = "rbxassetid://86737463322606",
 colorWheel = "rbxassetid://2849458409",
 colorTarget = "rbxassetid://73265255323268",
 grid = "rbxassetid://121484455191370",
-globe = "rbxassetid://108952102602834",
 transform = "rbxassetid://90336395745819",
 dropdown = "rbxassetid://18865373378",
 sliderbar = "rbxassetid://18772615246",
@@ -89,6 +87,15 @@ end
 local function Tween(instance, tweeninfo, propertytable)
 return TweenService:Create(instance, tweeninfo, propertytable)
 end
+local function parseSize(value, fallback)
+if typeof(value) == "UDim2" then return value end
+if typeof(value) == "Vector2" then return UDim2.fromOffset(value.X, value.Y) end
+if type(value) == "table" then
+if value[1] and value[2] then return UDim2.fromOffset(value[1], value[2]) end
+if value.Width and value.Height then return UDim2.fromOffset(value.Width, value.Height) end
+end
+return fallback
+end
 --// Library Functions
 function MacLib:Window(Settings)
 local WindowFunctions = {Settings = Settings}
@@ -99,8 +106,8 @@ acrylicBlur = true
 end
 local DEFAULT_PC_SIZE = UDim2.fromOffset(868, 650)
 local DEFAULT_MOBILE_SIZE = UDim2.fromOffset(600, 450)
-local pcSize = Settings.PCSize or Settings.Size or DEFAULT_PC_SIZE
-local mobileSize = Settings.MobileSize or DEFAULT_MOBILE_SIZE
+local pcSize = parseSize(Settings.PCSize or Settings.Size, DEFAULT_PC_SIZE)
+local mobileSize = parseSize(Settings.MobileSize, DEFAULT_MOBILE_SIZE)
 local mobileScale = tonumber(Settings.MobileScale) or 0.8
 local macLib = GetGui()
 local notifications = Instance.new("Frame")
@@ -372,7 +379,6 @@ Enum.FontStyle.Normal
 )
 subtitle.RichText = true
 subtitle.Text = Settings.Subtitle
-subtitle.RichText = true
 subtitle.TextColor3 = Color3.fromRGB(255, 255, 255)
 subtitle.TextSize = 12
 subtitle.TextTransparency = 0.7
@@ -414,8 +420,10 @@ userInfo.BorderSizePixel = 0
 userInfo.Position = UDim2.fromScale(0, 1)
 userInfo.Size = UDim2.new(1, 0, 0, 64)
 local userInfoDivider = Instance.new("Frame")
+userInfoDivider.Name = "UserInfoDivider"
 userInfoDivider.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
 userInfoDivider.BackgroundTransparency = 0.92
+userInfoDivider.BorderColor3 = Color3.fromRGB(0, 0, 0)
 userInfoDivider.BorderSizePixel = 0
 userInfoDivider.Position = UDim2.new(0, 10, 0, 0)
 userInfoDivider.Size = UDim2.new(1, -20, 0, 1)
@@ -431,6 +439,8 @@ local informationGroupUIPadding = Instance.new("UIPadding")
 informationGroupUIPadding.Name = "InformationGroupUIPadding"
 informationGroupUIPadding.PaddingBottom = UDim.new(0, 0)
 informationGroupUIPadding.PaddingLeft = UDim.new(0, 28)
+informationGroupUIPadding.PaddingRight = UDim.new(0, 12)
+informationGroupUIPadding.PaddingTop = UDim.new(0, 0)
 informationGroupUIPadding.Parent = informationGroup
 local informationGroupUIListLayout = Instance.new("UIListLayout")
 informationGroupUIListLayout.Name = "InformationGroupUIListLayout"
@@ -504,7 +514,7 @@ local username = Instance.new("TextLabel")
 username.Name = "Username"
 username.FontFace = Font.new(
 assets.interFont,
-Enum.FontWeight.SemiBold,
+Enum.FontWeight.Medium,
 Enum.FontStyle.Normal
 )
 username.Text = "@" .. LocalPlayer.Name
@@ -524,17 +534,12 @@ username.Parent = userAndDisplayFrame
 username.Size = UDim2.fromScale(1,0)
 userAndDisplayFrame.Parent = informationGroup
 informationGroup.Parent = userInfo
-local userInfoUIPadding = Instance.new("UIPadding")
-userInfoUIPadding.Name = "UserInfoUIPadding"
-userInfoUIPadding.PaddingLeft = UDim.new(0, 10)
-userInfoUIPadding.PaddingRight = UDim.new(0, 10)
-userInfoUIPadding.Parent = userInfo
 userInfo.Parent = sidebarGroup
 local sidebarGroupUIPadding = Instance.new("UIPadding")
 sidebarGroupUIPadding.Name = "SidebarGroupUIPadding"
 sidebarGroupUIPadding.PaddingLeft = UDim.new(0, 10)
 sidebarGroupUIPadding.PaddingRight = UDim.new(0, 10)
-sidebarGroupUIPadding.PaddingTop = UDim.new(0, 31)
+sidebarGroupUIPadding.PaddingTop = UDim.new(0, 13)
 sidebarGroupUIPadding.Parent = sidebarGroup
 local tabSwitchers = Instance.new("Frame")
 tabSwitchers.Name = "TabSwitchers"
@@ -577,13 +582,20 @@ content.BackgroundTransparency = 1
 content.BorderColor3 = Color3.fromRGB(0, 0, 0)
 content.BorderSizePixel = 0
 content.Position = UDim2.fromScale(1, 4.69e-08)
-content.Size = UDim2.new(0, (base.AbsoluteSize.X - sidebar.AbsoluteSize.X), 1, 0)
+local function getSidebarWidthUnscaled()
+local baseWidth = base.Size.X.Offset
+return baseWidth * sidebar.Size.X.Scale + sidebar.Size.X.Offset
+end
+local function updateContentWidth()
+content.Size = UDim2.new(0, base.Size.X.Offset - getSidebarWidthUnscaled(), 1, 0)
+end
+updateContentWidth()
+base:GetPropertyChangedSignal("Size"):Connect(updateContentWidth)
+sidebar:GetPropertyChangedSignal("Size"):Connect(updateContentWidth)
 local resizingContent = false
-local defaultSidebarWidth = sidebar.AbsoluteSize.X
 local initialMouseX, initialSidebarWidth
 local snapRange = 20
 local minSidebarWidth = 107
-local maxSidebarWidth = base.AbsoluteSize.X - minSidebarWidth
 local TweenSettings = {
 DefaultTransparency = 0.9,
 HoverTransparency = 0.85,
@@ -603,7 +615,7 @@ end)
 dividerInteract.MouseButton1Down:Connect(function()
 resizingContent = true
 initialMouseX = UserInputService:GetMouseLocation().X
-initialSidebarWidth = sidebar.AbsoluteSize.X
+initialSidebarWidth = getSidebarWidthUnscaled()
 end)
 UserInputService.InputEnded:Connect(function(input)
 if input.UserInputType == Enum.UserInputType.MouseButton1 then
@@ -612,15 +624,17 @@ end
 end)
 UserInputService.InputChanged:Connect(function(input)
 if resizingContent and input.UserInputType == Enum.UserInputType.MouseMovement then
-local deltaX = UserInputService:GetMouseLocation().X - initialMouseX
+local scale = baseUIScale.Scale
+local deltaX = (UserInputService:GetMouseLocation().X - initialMouseX) / scale
+local defaultSidebarWidth = base.Size.X.Offset * 0.28
 local newSidebarWidth = initialSidebarWidth + deltaX
 if math.abs(newSidebarWidth - defaultSidebarWidth) < snapRange then
 newSidebarWidth = defaultSidebarWidth
 else
-newSidebarWidth = math.clamp(newSidebarWidth, minSidebarWidth, maxSidebarWidth)
+newSidebarWidth = math.clamp(newSidebarWidth, minSidebarWidth, base.Size.X.Offset - minSidebarWidth)
 end
 sidebar.Size = UDim2.new(0, newSidebarWidth, 1, 0)
-content.Size = UDim2.new(0, base.AbsoluteSize.X - newSidebarWidth, 1, 0)
+updateContentWidth()
 end
 end)
 local topbar = Instance.new("Frame")
@@ -761,7 +775,6 @@ currentTab.Name = "CurrentTab"
 currentTab.FontFace = Font.new(assets.interFont)
 currentTab.RichText = true
 currentTab.Text = ""
-currentTab.RichText = true
 currentTab.TextColor3 = Color3.fromRGB(255, 255, 255)
 currentTab.TextSize = 15
 currentTab.TextTransparency = 0.5
@@ -865,7 +878,7 @@ if ((cf0 * za).lookVector - Needed_Look).magnitude > 0.01 then
 cf0 = cf0 * CFrame.Angles(0, 0, -2*acos(dot))
 end
 cf0 = cf0 * CFrame.new(0, perp/2, -(dif_para + para/2))
-local cf1 = st * ac * CFrame.Angles(0, pi, 0)
+local cf1 = st * ac * CFrame.Angles(0, math.pi, 0)
 if ((cf1 * za).lookVector - Needed_Look).magnitude > 0.01 then
 cf1 = cf1 * CFrame.Angles(0, 0, 2*acos(dot))
 end
@@ -1061,11 +1074,11 @@ tabSwitcherUIListLayout.SortOrder = Enum.SortOrder.LayoutOrder
 tabSwitcherUIListLayout.VerticalAlignment = Enum.VerticalAlignment.Center
 tabSwitcherUIListLayout.Parent = tabSwitcher
 local tabImage
-if Settings.Image then
-local resolvedIcon = resolveIcon(Settings.Image, Settings.Image)
+local tabIconId = Settings.Image and resolveIcon(Settings.Image)
+if tabIconId then
 tabImage = Instance.new("ImageLabel")
 tabImage.Name = "TabImage"
-tabImage.Image = resolvedIcon
+tabImage.Image = tabIconId
 tabImage.ImageTransparency = 0.5
 tabImage.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
 tabImage.BackgroundTransparency = 1
@@ -1099,8 +1112,8 @@ tabSwitcherName.Parent = tabSwitcher
 tabSwitcherName.LayoutOrder = 1
 local tabSwitcherUIPadding = Instance.new("UIPadding")
 tabSwitcherUIPadding.Name = "TabSwitcherUIPadding"
-tabSwitcherUIPadding.PaddingLeft = UDim.new(0, 24)
-tabSwitcherUIPadding.PaddingRight = UDim.new(0, 35)
+tabSwitcherUIPadding.PaddingLeft = UDim.new(0, 18)
+tabSwitcherUIPadding.PaddingRight = UDim.new(0, 18)
 tabSwitcherUIPadding.PaddingTop = UDim.new(0, 1)
 tabSwitcherUIPadding.Parent = tabSwitcher
 tabSwitcher.Parent = sectionTabSwitchers
@@ -1178,7 +1191,6 @@ rightUIListLayout.SortOrder = Enum.SortOrder.LayoutOrder
 rightUIListLayout.Parent = right
 right.Parent = elementsScrolling
 elementsScrolling.Parent = elements1
-
 --// Subtab system
 local subtabs = {}
 local subtabOrder = {}
@@ -1320,8 +1332,12 @@ if state == listOpen then return end
 listDb = true
 listOpen = state
 local targetSize = state and UDim2.new(1, 0, 0, getListHeight()) or UDim2.new(1, 0, 0, 0)
-local dropTween = Tween(subtabList, TweenInfo.new(0.2, Enum.EasingStyle.Exponential, Enum.EasingDirection.Out), {Size = targetSize})
-local iconTween = Tween(subtabArrow, TweenInfo.new(0.2, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {Rotation = state and -90 or 0})
+local dropTween = Tween(subtabList, TweenInfo.new(0.2, Enum.EasingStyle.Exponential, Enum.EasingDirection.Out), {
+Size = targetSize
+})
+local iconTween = Tween(subtabArrow, TweenInfo.new(0.2, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
+Rotation = state and -90 or 0
+})
 if state then
 subtabList.CanvasPosition = Vector2.new(0, 0)
 subtabList.Visible = true
@@ -1329,11 +1345,15 @@ end
 dropTween:Play()
 iconTween:Play()
 dropTween.Completed:Connect(function()
-if not state then subtabList.Visible = false end
+if not state then
+subtabList.Visible = false
+end
 listDb = false
 end)
 end
-subtabButton.MouseButton1Click:Connect(function() setSubTabListOpen(not listOpen) end)
+subtabButton.MouseButton1Click:Connect(function()
+setSubTabListOpen(not listOpen)
+end)
 UserInputService.InputEnded:Connect(function(input)
 if not (subtabSelector.Visible and listOpen) then return end
 if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
@@ -1345,7 +1365,9 @@ local p = gui.AbsolutePosition
 local s = gui.AbsoluteSize
 return mouse.X >= p.X and mouse.X <= p.X + s.X and mouse.Y >= p.Y and mouse.Y <= p.Y + s.Y
 end
-if not inside(subtabSelector) and not inside(subtabList) then setSubTabListOpen(false) end
+if not inside(subtabSelector) and not inside(subtabList) then
+setSubTabListOpen(false)
+end
 end)
 end
 end)
@@ -1355,7 +1377,13 @@ if not data then return end
 for otherName, other in pairs(subtabs) do
 other.Page.Visible = false
 if other.Tweens then
-if otherName == name then other.Tweens.checkIn:Play() other.Tweens.nameIn:Play() else other.Tweens.checkOut:Play() other.Tweens.nameOut:Play() end
+if otherName == name then
+other.Tweens.checkIn:Play()
+other.Tweens.nameIn:Play()
+else
+other.Tweens.checkOut:Play()
+other.Tweens.nameOut:Play()
+end
 end
 end
 data.Page.Visible = true
@@ -1366,8 +1394,19 @@ end
 local function addSubTab(name)
 if subtabs[name] then return end
 local page, pageLeft, pageRight
-if #subtabOrder == 0 then page = defaultPage pageLeft = left pageRight = right else page, pageLeft, pageRight = makePage() end
-subtabs[name] = {Name = name, Page = page, Left = pageLeft, Right = pageRight}
+if #subtabOrder == 0 then
+page = defaultPage
+pageLeft = left
+pageRight = right
+else
+page, pageLeft, pageRight = makePage()
+end
+subtabs[name] = {
+Name = name,
+Page = page,
+Left = pageLeft,
+Right = pageRight,
+}
 table.insert(subtabOrder, name)
 local option = Instance.new("TextButton")
 option.Name = "Option"
@@ -1427,24 +1466,52 @@ checkmark.Parent = option
 subtabs[name].OptionText = optionName
 subtabs[name].Checkmark = checkmark
 subtabs[name].Tweens = {
-checkIn = Tween(checkmark, TweenInfo.new(0.15, subtabTweensettings.easingStyle), {TextTransparency = 0}),
-checkOut = Tween(checkmark, TweenInfo.new(0.15, subtabTweensettings.easingStyle), {TextTransparency = 1}),
-nameIn = Tween(optionName, TweenInfo.new(subtabTweensettings.duration, subtabTweensettings.easingStyle), {TextTransparency = subtabTweensettings.transparencyIn}),
-nameOut = Tween(optionName, TweenInfo.new(subtabTweensettings.duration, subtabTweensettings.easingStyle), {TextTransparency = subtabTweensettings.transparencyOut})
+checkIn = Tween(checkmark, TweenInfo.new(0.15, subtabTweensettings.easingStyle), {
+TextTransparency = 0
+}),
+checkOut = Tween(checkmark, TweenInfo.new(0.15, subtabTweensettings.easingStyle), {
+TextTransparency = 1
+}),
+nameIn = Tween(optionName, TweenInfo.new(subtabTweensettings.duration, subtabTweensettings.easingStyle), {
+TextTransparency = subtabTweensettings.transparencyIn
+}),
+nameOut = Tween(optionName, TweenInfo.new(subtabTweensettings.duration, subtabTweensettings.easingStyle), {
+TextTransparency = subtabTweensettings.transparencyOut
+}),
 }
-option.MouseEnter:Connect(function() if currentSubTab ~= name then Tween(option, TweenInfo.new(0.15, Enum.EasingStyle.Sine), { BackgroundTransparency = 0.95 }):Play() end end)
-option.MouseLeave:Connect(function() Tween(option, TweenInfo.new(0.15, Enum.EasingStyle.Sine), { BackgroundTransparency = 1 }):Play() end)
-option.MouseButton1Click:Connect(function() selectSubTab(name) end)
-if #subtabOrder == 1 then selectSubTab(name) if currentTabInstance == elements1 then currentTab.Visible = false subtabSelector.Visible = true end end
+option.MouseEnter:Connect(function()
+if currentSubTab ~= name then
+Tween(option, TweenInfo.new(0.15, Enum.EasingStyle.Sine), { BackgroundTransparency = 0.95 }):Play()
+end
+end)
+option.MouseLeave:Connect(function()
+Tween(option, TweenInfo.new(0.15, Enum.EasingStyle.Sine), { BackgroundTransparency = 1 }):Play()
+end)
+option.MouseButton1Click:Connect(function()
+selectSubTab(name)
+end)
+if #subtabOrder == 1 then
+selectSubTab(name)
+if currentTabInstance == elements1 then
+currentTab.Visible = false
+subtabSelector.Visible = true
+end
+end
 end
 function TabFunctions:SubTab(Settings)
 local name = Settings
-if type(Settings) == "table" then name = Settings.Name end
-if type(name) ~= "string" or name == "" then return end
+if type(Settings) == "table" then
+name = Settings.Name
+end
+if type(name) ~= "string" or name == "" then
+return
+end
 addSubTab(name)
 return {
 Name = name,
-Select = function() selectSubTab(name) end,
+Select = function()
+selectSubTab(name)
+end,
 Section = function(_, settings)
 settings = settings or {}
 settings.Page = name
@@ -1453,7 +1520,6 @@ end,
 }
 end
 subtabSelector.Visible = false
-
 function TabFunctions:Section(Settings)
 Settings = Settings or {}
 local SectionFunctions = {}
@@ -1467,7 +1533,6 @@ section.BorderSizePixel = 0
 section.Position = UDim2.fromScale(0, 6.78e-08)
 section.Size = UDim2.fromScale(1, 0)
 section.ClipsDescendants = true
-
 local targetLeft, targetRight = left, right
 if Settings.Page and subtabs[Settings.Page] then
 targetLeft = subtabs[Settings.Page].Left
@@ -1477,7 +1542,6 @@ targetLeft = subtabs[currentSubTab].Left
 targetRight = subtabs[currentSubTab].Right
 end
 section.Parent = Settings.Side == "Left" and targetLeft or targetRight
-
 local sectionUICorner = Instance.new("UICorner")
 sectionUICorner.Name = "SectionUICorner"
 sectionUICorner.Parent = section
@@ -1813,6 +1877,7 @@ sliderTouchArea.AnchorPoint = Vector2.new(0.5, 0.5)
 sliderTouchArea.Position = UDim2.fromScale(0.5, 0.5)
 sliderTouchArea.Size = UDim2.new(1, 0, 1, 30)
 sliderTouchArea.Parent = sliderBar
+sliderBar.LayoutOrder = 0
 sliderBar.Parent = sliderElements
 local sliderElementsUIPadding = Instance.new("UIPadding")
 sliderElementsUIPadding.Name = "SliderElementsUIPadding"
@@ -2853,16 +2918,16 @@ local promptUIScale = Instance.new("UIScale")
 promptUIScale.Name = "BaseUIScale"
 promptUIScale.Parent = prompt
 promptUIScale.Scale = 0.95
-local globalSettingsUIStroke = Instance.new("UIStroke")
-globalSettingsUIStroke.Name = "GlobalSettingsUIStroke"
-globalSettingsUIStroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
-globalSettingsUIStroke.Color = Color3.fromRGB(255, 255, 255)
-globalSettingsUIStroke.Transparency = 0.9
-globalSettingsUIStroke.Parent = prompt
-local globalSettingsUICorner = Instance.new("UICorner")
-globalSettingsUICorner.Name = "GlobalSettingsUICorner"
-globalSettingsUICorner.CornerRadius = UDim.new(0, 10)
-globalSettingsUICorner.Parent = prompt
+local promptUIStroke = Instance.new("UIStroke")
+promptUIStroke.Name = "PromptUIStroke"
+promptUIStroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
+promptUIStroke.Color = Color3.fromRGB(255, 255, 255)
+promptUIStroke.Transparency = 0.9
+promptUIStroke.Parent = prompt
+local promptUICorner = Instance.new("UICorner")
+promptUICorner.Name = "PromptUICorner"
+promptUICorner.CornerRadius = UDim.new(0, 10)
+promptUICorner.Parent = prompt
 local uIListLayout = Instance.new("UIListLayout")
 uIListLayout.Name = "UIListLayout"
 uIListLayout.Padding = UDim.new(0, 10)
@@ -3099,6 +3164,7 @@ uIListLayout4.Parent = green
 local inputBox1 = Instance.new("TextBox")
 inputBox1.Name = "InputBox"
 inputBox1.ClearTextOnFocus = false
+inputBox1.CursorPosition = -1
 inputBox1.FontFace = Font.new(assets.interFont)
 inputBox1.Text = "255"
 inputBox1.TextColor3 = Color3.fromRGB(255, 255, 255)
@@ -3172,6 +3238,7 @@ uIListLayout5.Parent = blue
 local inputBox2 = Instance.new("TextBox")
 inputBox2.Name = "InputBox"
 inputBox2.ClearTextOnFocus = false
+inputBox2.CursorPosition = -1
 inputBox2.FontFace = Font.new(assets.interFont)
 inputBox2.Text = "255"
 inputBox2.TextColor3 = Color3.fromRGB(255, 255, 255)
@@ -3246,6 +3313,7 @@ uIListLayout6.Parent = alpha
 local inputBox3 = Instance.new("TextBox")
 inputBox3.Name = "InputBox"
 inputBox3.ClearTextOnFocus = false
+inputBox3.CursorPosition = -1
 inputBox3.FontFace = Font.new(assets.interFont)
 inputBox3.Text = "0"
 inputBox3.TextColor3 = Color3.fromRGB(255, 255, 255)
@@ -3909,7 +3977,7 @@ local labelText = Instance.new("TextLabel")
 labelText.Name = "LabelText"
 labelText.FontFace = Font.new(assets.interFont)
 labelText.RichText = true
-labelText.Text = LabelFunctions.Settings.Text or LabelFunctions.Settings.Name -- Settings.Name Deprecated use Settings.Text
+labelText.Text = LabelFunctions.Settings.Text or LabelFunctions.Settings.Name
 labelText.TextColor3 = Color3.fromRGB(255, 255, 255)
 labelText.TextSize = 13
 labelText.TextTransparency = 0.5
@@ -3948,7 +4016,7 @@ local subLabelText = Instance.new("TextLabel")
 subLabelText.Name = "SubLabelText"
 subLabelText.FontFace = Font.new(assets.interFont)
 subLabelText.RichText = true
-subLabelText.Text = SubLabelFunctions.Settings.Text or SubLabelFunctions.Settings.Name -- Settings.Name Deprecated use Settings.Text
+subLabelText.Text = SubLabelFunctions.Settings.Text or SubLabelFunctions.Settings.Name
 subLabelText.TextColor3 = Color3.fromRGB(255, 255, 255)
 subLabelText.TextSize = 12
 subLabelText.TextTransparency = 0.7
@@ -4397,7 +4465,7 @@ uIPadding.Parent = notificationControls
 notificationControls.Parent = notification
 local tweens = {
 In = Tween(notificationUIScale, TweenInfo.new(0.2, Enum.EasingStyle.Exponential, Enum.EasingDirection.Out), {
-Scale = Settings.Scale or 1
+Scale = Settings.Scale or baseUIScale.Scale
 }),
 Out = Tween(notificationUIScale, TweenInfo.new(0.2, Enum.EasingStyle.Exponential, Enum.EasingDirection.Out), {
 Scale = 0
@@ -4483,23 +4551,23 @@ local promptUIScale = Instance.new("UIScale")
 promptUIScale.Name = "BaseUIScale"
 promptUIScale.Parent = prompt
 promptUIScale.Scale = 0.95
-local globalSettingsUIStroke = Instance.new("UIStroke")
-globalSettingsUIStroke.Name = "GlobalSettingsUIStroke"
-globalSettingsUIStroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
-globalSettingsUIStroke.Color = Color3.fromRGB(255, 255, 255)
-globalSettingsUIStroke.Transparency = 0.9
-globalSettingsUIStroke.Parent = prompt
-local globalSettingsUICorner = Instance.new("UICorner")
-globalSettingsUICorner.Name = "GlobalSettingsUICorner"
-globalSettingsUICorner.CornerRadius = UDim.new(0, 10)
-globalSettingsUICorner.Parent = prompt
-local globalSettingsUIPadding = Instance.new("UIPadding")
-globalSettingsUIPadding.Name = "GlobalSettingsUIPadding"
-globalSettingsUIPadding.PaddingBottom = UDim.new(0, 20)
-globalSettingsUIPadding.PaddingLeft = UDim.new(0, 20)
-globalSettingsUIPadding.PaddingRight = UDim.new(0, 20)
-globalSettingsUIPadding.PaddingTop = UDim.new(0, 20)
-globalSettingsUIPadding.Parent = prompt
+local promptUIStroke = Instance.new("UIStroke")
+promptUIStroke.Name = "PromptUIStroke"
+promptUIStroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
+promptUIStroke.Color = Color3.fromRGB(255, 255, 255)
+promptUIStroke.Transparency = 0.9
+promptUIStroke.Parent = prompt
+local promptUICorner = Instance.new("UICorner")
+promptUICorner.Name = "PromptUICorner"
+promptUICorner.CornerRadius = UDim.new(0, 10)
+promptUICorner.Parent = prompt
+local promptUIPadding = Instance.new("UIPadding")
+promptUIPadding.Name = "PromptUIPadding"
+promptUIPadding.PaddingBottom = UDim.new(0, 20)
+promptUIPadding.PaddingLeft = UDim.new(0, 20)
+promptUIPadding.PaddingRight = UDim.new(0, 20)
+promptUIPadding.PaddingTop = UDim.new(0, 20)
+promptUIPadding.Parent = prompt
 local paragraph = Instance.new("Frame")
 paragraph.Name = "Paragraph"
 paragraph.AutomaticSize = Enum.AutomaticSize.Y
@@ -4762,16 +4830,22 @@ function WindowFunctions:GetUserInfoState(State)
 return showUserInfo
 end
 function WindowFunctions:SetSize(Size)
-base.Size = Size
+base.Size = parseSize(Size, base.Size)
+updateContentWidth()
 end
 function WindowFunctions:GetSize(Size)
 return base.Size
 end
 function WindowFunctions:SetScale(Scale)
-baseUIScale.Scale = Scale
+if isMobile then
+baseUIScale.Scale = tonumber(Scale) or baseUIScale.Scale
+end
 end
 function WindowFunctions:GetScale()
 return baseUIScale.Scale
+end
+function WindowFunctions:GetPlatform()
+return isMobile and "Mobile" or "PC"
 end
 local ClassParser = {
 ["Toggle"] = {
