@@ -438,8 +438,8 @@ informationGroup.Size = UDim2.fromScale(1, 1)
 local informationGroupUIPadding = Instance.new("UIPadding")
 informationGroupUIPadding.Name = "InformationGroupUIPadding"
 informationGroupUIPadding.PaddingBottom = UDim.new(0, 0)
-informationGroupUIPadding.PaddingLeft = UDim.new(0, 28)
-informationGroupUIPadding.PaddingRight = UDim.new(0, 12)
+informationGroupUIPadding.PaddingLeft = UDim.new(0, 10)
+informationGroupUIPadding.PaddingRight = UDim.new(0, 10)
 informationGroupUIPadding.PaddingTop = UDim.new(0, 0)
 informationGroupUIPadding.Parent = informationGroup
 local informationGroupUIListLayout = Instance.new("UIListLayout")
@@ -502,7 +502,7 @@ displayName.Parent = userAndDisplayFrame
 displayName.Size = UDim2.fromScale(1,0)
 local userAndDisplayFrameUIPadding = Instance.new("UIPadding")
 userAndDisplayFrameUIPadding.Name = "UserAndDisplayFrameUIPadding"
-userAndDisplayFrameUIPadding.PaddingLeft = UDim.new(0, 10)
+userAndDisplayFrameUIPadding.PaddingLeft = UDim.new(0, 8)
 userAndDisplayFrameUIPadding.PaddingTop = UDim.new(0, 4)
 userAndDisplayFrameUIPadding.Parent = userAndDisplayFrame
 local userAndDisplayFrameUIListLayout = Instance.new("UIListLayout")
@@ -1282,15 +1282,15 @@ subtabList.BottomImage = ""
 subtabList.TopImage = ""
 subtabList.ScrollBarImageTransparency = 0.5
 subtabList.ScrollBarThickness = 2
-subtabList.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
+subtabList.BackgroundColor3 = Color3.fromRGB(15, 15, 15)
 subtabList.BackgroundTransparency = 0
 subtabList.BorderSizePixel = 0
 subtabList.ClipsDescendants = true
-subtabList.Position = UDim2.new(0, 0, 1, 4)
+subtabList.Position = UDim2.new(0, 0, 1, 0)
 subtabList.Size = UDim2.new(1, 0, 0, 0)
 subtabList.Visible = false
 subtabList.ZIndex = 110
-subtabList.Parent = subtabButton
+subtabList.Parent = subtabSelector
 local subtabListCorner = Instance.new("UICorner")
 subtabListCorner.Name = "SubtabListCorner"
 subtabListCorner.CornerRadius = UDim.new(0, 6)
@@ -1319,6 +1319,8 @@ duration = 0.2,
 easingStyle = Enum.EasingStyle.Quint,
 transparencyIn = 0.2,
 transparencyOut = 0.5,
+checkSizeIncrease = 12,
+checkSizeDecrease = -10,
 }
 local function getListHeight()
 local count = #subtabOrder
@@ -1332,12 +1334,8 @@ if state == listOpen then return end
 listDb = true
 listOpen = state
 local targetSize = state and UDim2.new(1, 0, 0, getListHeight()) or UDim2.new(1, 0, 0, 0)
-local dropTween = Tween(subtabList, TweenInfo.new(0.2, Enum.EasingStyle.Exponential, Enum.EasingDirection.Out), {
-Size = targetSize
-})
-local iconTween = Tween(subtabArrow, TweenInfo.new(0.2, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
-Rotation = state and -90 or 0
-})
+local dropTween = Tween(subtabList, TweenInfo.new(0.2, Enum.EasingStyle.Exponential, Enum.EasingDirection.Out), {Size = targetSize})
+local iconTween = Tween(subtabArrow, TweenInfo.new(0.2, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {Rotation = state and -90 or 0})
 if state then
 subtabList.CanvasPosition = Vector2.new(0, 0)
 subtabList.Visible = true
@@ -1345,15 +1343,11 @@ end
 dropTween:Play()
 iconTween:Play()
 dropTween.Completed:Connect(function()
-if not state then
-subtabList.Visible = false
-end
+if not state then subtabList.Visible = false end
 listDb = false
 end)
 end
-subtabButton.MouseButton1Click:Connect(function()
-setSubTabListOpen(not listOpen)
-end)
+subtabButton.MouseButton1Click:Connect(function() setSubTabListOpen(not listOpen) end)
 UserInputService.InputEnded:Connect(function(input)
 if not (subtabSelector.Visible and listOpen) then return end
 if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
@@ -1365,9 +1359,7 @@ local p = gui.AbsolutePosition
 local s = gui.AbsoluteSize
 return mouse.X >= p.X and mouse.X <= p.X + s.X and mouse.Y >= p.Y and mouse.Y <= p.Y + s.Y
 end
-if not inside(subtabSelector) and not inside(subtabList) then
-setSubTabListOpen(false)
-end
+if not inside(subtabSelector) and not inside(subtabList) then setSubTabListOpen(false) end
 end)
 end
 end)
@@ -1378,9 +1370,11 @@ for otherName, other in pairs(subtabs) do
 other.Page.Visible = false
 if other.Tweens then
 if otherName == name then
+other.Checkmark.TextTransparency = 0
 other.Tweens.checkIn:Play()
 other.Tweens.nameIn:Play()
 else
+other.Checkmark.TextTransparency = 1
 other.Tweens.checkOut:Play()
 other.Tweens.nameOut:Play()
 end
@@ -1394,19 +1388,8 @@ end
 local function addSubTab(name)
 if subtabs[name] then return end
 local page, pageLeft, pageRight
-if #subtabOrder == 0 then
-page = defaultPage
-pageLeft = left
-pageRight = right
-else
-page, pageLeft, pageRight = makePage()
-end
-subtabs[name] = {
-Name = name,
-Page = page,
-Left = pageLeft,
-Right = pageRight,
-}
+if #subtabOrder == 0 then page = defaultPage pageLeft = left pageRight = right else page, pageLeft, pageRight = makePage() end
+subtabs[name] = {Name = name, Page = page, Left = pageLeft, Right = pageRight}
 table.insert(subtabOrder, name)
 local option = Instance.new("TextButton")
 option.Name = "Option"
@@ -1425,7 +1408,6 @@ option.Parent = subtabList
 local optionUIPadding = Instance.new("UIPadding")
 optionUIPadding.Name = "OptionUIPadding"
 optionUIPadding.PaddingLeft = UDim.new(0, 15)
-optionUIPadding.PaddingRight = UDim.new(0, 15)
 optionUIPadding.Parent = option
 local optionName = Instance.new("TextLabel")
 optionName.Name = "OptionName"
@@ -1437,15 +1419,23 @@ optionName.TextSize = 13
 optionName.TextTransparency = 0.5
 optionName.TextTruncate = Enum.TextTruncate.AtEnd
 optionName.TextXAlignment = Enum.TextXAlignment.Left
+optionName.TextYAlignment = Enum.TextYAlignment.Top
 optionName.AnchorPoint = Vector2.new(0, 0.5)
+optionName.AutomaticSize = Enum.AutomaticSize.XY
 optionName.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
 optionName.BackgroundTransparency = 1
 optionName.BorderColor3 = Color3.fromRGB(0, 0, 0)
 optionName.BorderSizePixel = 0
-optionName.Position = UDim2.new(0, 0, 0.5, 0)
-optionName.Size = UDim2.new(1, -20, 1, 0)
+optionName.Position = UDim2.fromScale(1.3e-07, 0.5)
 optionName.ZIndex = 112
 optionName.Parent = option
+local optionUIListLayout = Instance.new("UIListLayout")
+optionUIListLayout.Name = "OptionUIListLayout"
+optionUIListLayout.Padding = UDim.new(0, 10)
+optionUIListLayout.FillDirection = Enum.FillDirection.Horizontal
+optionUIListLayout.SortOrder = Enum.SortOrder.LayoutOrder
+optionUIListLayout.VerticalAlignment = Enum.VerticalAlignment.Center
+optionUIListLayout.Parent = option
 local checkmark = Instance.new("TextLabel")
 checkmark.Name = "Checkmark"
 checkmark.FontFace = Font.new(assets.interFont)
@@ -1453,24 +1443,27 @@ checkmark.Text = "✓"
 checkmark.TextColor3 = Color3.fromRGB(255, 255, 255)
 checkmark.TextSize = 13
 checkmark.TextTransparency = 1
-checkmark.TextXAlignment = Enum.TextXAlignment.Right
-checkmark.AnchorPoint = Vector2.new(1, 0.5)
+checkmark.TextXAlignment = Enum.TextXAlignment.Left
+checkmark.TextYAlignment = Enum.TextYAlignment.Top
+checkmark.AnchorPoint = Vector2.new(0, 0.5)
+checkmark.AutomaticSize = Enum.AutomaticSize.Y
 checkmark.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
 checkmark.BackgroundTransparency = 1
 checkmark.BorderColor3 = Color3.fromRGB(0, 0, 0)
 checkmark.BorderSizePixel = 0
-checkmark.Position = UDim2.new(1, 0, 0.5, 0)
-checkmark.Size = UDim2.fromOffset(14, 14)
+checkmark.LayoutOrder = -1
+checkmark.Position = UDim2.fromScale(1.3e-07, 0.5)
+checkmark.Size = UDim2.fromOffset(-10, 0)
 checkmark.ZIndex = 112
 checkmark.Parent = option
 subtabs[name].OptionText = optionName
 subtabs[name].Checkmark = checkmark
 subtabs[name].Tweens = {
-checkIn = Tween(checkmark, TweenInfo.new(0.15, subtabTweensettings.easingStyle), {
-TextTransparency = 0
+checkIn = Tween(checkmark, TweenInfo.new(subtabTweensettings.duration, subtabTweensettings.easingStyle), {
+Size = UDim2.new(checkmark.Size.X.Scale, subtabTweensettings.checkSizeIncrease, checkmark.Size.Y.Scale, checkmark.Size.Y.Offset)
 }),
-checkOut = Tween(checkmark, TweenInfo.new(0.15, subtabTweensettings.easingStyle), {
-TextTransparency = 1
+checkOut = Tween(checkmark, TweenInfo.new(subtabTweensettings.duration, subtabTweensettings.easingStyle), {
+Size = UDim2.new(checkmark.Size.X.Scale, subtabTweensettings.checkSizeDecrease, checkmark.Size.Y.Scale, checkmark.Size.Y.Offset)
 }),
 nameIn = Tween(optionName, TweenInfo.new(subtabTweensettings.duration, subtabTweensettings.easingStyle), {
 TextTransparency = subtabTweensettings.transparencyIn
@@ -1479,39 +1472,19 @@ nameOut = Tween(optionName, TweenInfo.new(subtabTweensettings.duration, subtabTw
 TextTransparency = subtabTweensettings.transparencyOut
 }),
 }
-option.MouseEnter:Connect(function()
-if currentSubTab ~= name then
-Tween(option, TweenInfo.new(0.15, Enum.EasingStyle.Sine), { BackgroundTransparency = 0.95 }):Play()
-end
-end)
-option.MouseLeave:Connect(function()
-Tween(option, TweenInfo.new(0.15, Enum.EasingStyle.Sine), { BackgroundTransparency = 1 }):Play()
-end)
-option.MouseButton1Click:Connect(function()
-selectSubTab(name)
-end)
-if #subtabOrder == 1 then
-selectSubTab(name)
-if currentTabInstance == elements1 then
-currentTab.Visible = false
-subtabSelector.Visible = true
-end
-end
+option.MouseEnter:Connect(function() if currentSubTab ~= name then Tween(option, TweenInfo.new(0.15, Enum.EasingStyle.Sine), { BackgroundTransparency = 0.95 }):Play() end end)
+option.MouseLeave:Connect(function() Tween(option, TweenInfo.new(0.15, Enum.EasingStyle.Sine), { BackgroundTransparency = 1 }):Play() end)
+option.MouseButton1Click:Connect(function() selectSubTab(name) end)
+if #subtabOrder == 1 then selectSubTab(name) if currentTabInstance == elements1 then currentTab.Visible = false subtabSelector.Visible = true end end
 end
 function TabFunctions:SubTab(Settings)
 local name = Settings
-if type(Settings) == "table" then
-name = Settings.Name
-end
-if type(name) ~= "string" or name == "" then
-return
-end
+if type(Settings) == "table" then name = Settings.Name end
+if type(name) ~= "string" or name == "" then return end
 addSubTab(name)
 return {
 Name = name,
-Select = function()
-selectSubTab(name)
-end,
+Select = function() selectSubTab(name) end,
 Section = function(_, settings)
 settings = settings or {}
 settings.Page = name
@@ -3535,10 +3508,10 @@ uIPadding1.PaddingLeft = UDim.new(0, 10)
 uIPadding1.PaddingRight = UDim.new(0, 10)
 uIPadding1.PaddingTop = UDim.new(0, 9)
 uIPadding1.Parent = confirm
-local baseUICorner = Instance.new("UICorner")
-baseUICorner.Name = "BaseUICorner"
-baseUICorner.CornerRadius = UDim.new(0, 10)
-baseUICorner.Parent = confirm
+local confirmUICorner = Instance.new("UICorner")
+confirmUICorner.Name = "ConfirmUICorner"
+confirmUICorner.CornerRadius = UDim.new(0, 10)
+confirmUICorner.Parent = confirm
 confirm.Parent = interactions
 local cancel = Instance.new("TextButton")
 cancel.Name = "Cancel"
@@ -3558,10 +3531,10 @@ cancel.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
 cancel.BorderColor3 = Color3.fromRGB(0, 0, 0)
 cancel.BorderSizePixel = 0
 cancel.Size = UDim2.fromScale(1, 0)
-local baseUICorner1 = Instance.new("UICorner")
-baseUICorner1.Name = "BaseUICorner"
-baseUICorner1.CornerRadius = UDim.new(0, 10)
-baseUICorner1.Parent = cancel
+local cancelUICorner = Instance.new("UICorner")
+cancelUICorner.Name = "CancelUICorner"
+cancelUICorner.CornerRadius = UDim.new(0, 10)
+cancelUICorner.Parent = cancel
 local uIPadding2 = Instance.new("UIPadding")
 uIPadding2.Name = "UIPadding"
 uIPadding2.PaddingBottom = UDim.new(0, 9)
@@ -3575,13 +3548,13 @@ uIPadding3.Name = "UIPadding"
 uIPadding3.PaddingTop = UDim.new(0, 10)
 uIPadding3.Parent = interactions
 interactions.Parent = prompt
-local globalSettingsUIPadding = Instance.new("UIPadding")
-globalSettingsUIPadding.Name = "GlobalSettingsUIPadding"
-globalSettingsUIPadding.PaddingBottom = UDim.new(0, 20)
-globalSettingsUIPadding.PaddingLeft = UDim.new(0, 20)
-globalSettingsUIPadding.PaddingRight = UDim.new(0, 20)
-globalSettingsUIPadding.PaddingTop = UDim.new(0, 20)
-globalSettingsUIPadding.Parent = prompt
+local promptUIPadding = Instance.new("UIPadding")
+promptUIPadding.Name = "PromptUIPadding"
+promptUIPadding.PaddingBottom = UDim.new(0, 20)
+promptUIPadding.PaddingLeft = UDim.new(0, 20)
+promptUIPadding.PaddingRight = UDim.new(0, 20)
+promptUIPadding.PaddingTop = UDim.new(0, 20)
+promptUIPadding.Parent = prompt
 local paragraph = Instance.new("Frame")
 paragraph.Name = "Paragraph"
 paragraph.AutomaticSize = Enum.AutomaticSize.Y
