@@ -43,56 +43,31 @@ local LUCIDE_ICON_URL = "https://raw.githubusercontent.com/frappedevs/lucideblox
 local lucideMap = nil
 local lucideWarned = false
 local function getLucideMap()
-if lucideMap then
-return lucideMap
-end
-local ok, raw = pcall(function()
-return game:HttpGet(LUCIDE_ICON_URL)
-end)
-if not ok then
-ok, raw = pcall(function()
-return HttpService:HttpGetAsync(LUCIDE_ICON_URL)
-end)
-end
+if lucideMap then return lucideMap end
+local ok, raw = pcall(function() return game:HttpGet(LUCIDE_ICON_URL) end)
+if not ok then ok, raw = pcall(function() return HttpService:HttpGetAsync(LUCIDE_ICON_URL) end) end
 local decoded
 if ok then
-local okDecode, result = pcall(function()
-return HttpService:JSONDecode(raw)
-end)
-if okDecode and type(result) == "table" and type(result.icons) == "table" then
-decoded = result.icons
-end
+local okDecode, result = pcall(function() return HttpService:JSONDecode(raw) end)
+if okDecode and type(result) == "table" and type(result.icons) == "table" then decoded = result.icons end
 end
 if not decoded then
 decoded = {}
-if not lucideWarned then
-lucideWarned = true
-warn("[MacLib] Could not fetch Lucide icon map. Use rbxassetid strings instead.")
-end
+if not lucideWarned then lucideWarned = true warn("[MacLib] Could not fetch Lucide icon map. Use rbxassetid strings instead.") end
 end
 lucideMap = decoded
 return lucideMap
 end
-local function cleanIconName(name)
-return name:lower():gsub("%s+", "-"):gsub("_", "-")
-end
+local function cleanIconName(name) return name:lower():gsub("%s+", "-"):gsub("_", "-") end
 function MacLib:Icon(name)
-if typeof(name) ~= "string" then
-return nil
-end
-if name:match("^rbxasset") or name:match("^rbxthumb") or name:match("^http") then
-return name
-end
+if typeof(name) ~= "string" then return nil end
+if name:match("^rbxasset") or name:match("^rbxthumb") or name:match("^http") then return name end
 local map = getLucideMap()
 return map[cleanIconName(name)]
 end
 local function resolveIcon(value, fallback)
-if typeof(value) ~= "string" then
-return fallback
-end
-if value:match("^rbxasset") or value:match("^rbxthumb") or value:match("^http") then
-return value
-end
+if typeof(value) ~= "string" then return fallback end
+if value:match("^rbxasset") or value:match("^rbxthumb") or value:match("^http") then return value end
 return MacLib:Icon(value) or fallback
 end
 --// Functions
@@ -102,41 +77,24 @@ newGui.ScreenInsets = Enum.ScreenInsets.None
 newGui.ResetOnSpawn = false
 newGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
 newGui.DisplayOrder = 2147483647
-local parent = RunService:IsStudio()
-and LocalPlayer:FindFirstChild("PlayerGui")
-or (gethui and gethui())
-or (cloneref and cloneref(MacLib.GetService("CoreGui")) or MacLib.GetService("CoreGui"))
+local parent = RunService:IsStudio() and LocalPlayer:FindFirstChild("PlayerGui") or (gethui and gethui()) or (cloneref and cloneref(MacLib.GetService("CoreGui")) or MacLib.GetService("CoreGui"))
 newGui.Parent = parent
 return newGui
 end
-local function Tween(instance, tweeninfo, propertytable)
-return TweenService:Create(instance, tweeninfo, propertytable)
-end
+local function Tween(instance, tweeninfo, propertytable) return TweenService:Create(instance, tweeninfo, propertytable) end
 local function parseSize(value, fallback)
-if typeof(value) == "UDim2" then
-return value
-end
-if typeof(value) == "Vector2" then
-return UDim2.fromOffset(value.X, value.Y)
-end
+if typeof(value) == "UDim2" then return value end
+if typeof(value) == "Vector2" then return UDim2.fromOffset(value.X, value.Y) end
 if type(value) == "table" then
-if value[1] and value[2] then
-return UDim2.fromOffset(value[1], value[2])
-end
-if value.Width and value.Height then
-return UDim2.fromOffset(value.Width, value.Height)
-end
+if value[1] and value[2] then return UDim2.fromOffset(value[1], value[2]) end
+if value.Width and value.Height then return UDim2.fromOffset(value.Width, value.Height) end
 end
 return fallback
 end
 --// Library Functions
 function MacLib:Window(Settings)
 local WindowFunctions = {Settings = Settings}
-if Settings.AcrylicBlur ~= nil then
-acrylicBlur = Settings.AcrylicBlur
-else
-acrylicBlur = true
-end
+if Settings.AcrylicBlur ~= nil then acrylicBlur = Settings.AcrylicBlur else acrylicBlur = true end
 local DEFAULT_PC_SIZE = UDim2.fromOffset(868, 650)
 local DEFAULT_MOBILE_SIZE = UDim2.fromOffset(600, 450)
 local pcSize = parseSize(Settings.PCSize or Settings.Size, DEFAULT_PC_SIZE)
@@ -228,6 +186,7 @@ windowControls.BackgroundTransparency = 1
 windowControls.BorderColor3 = Color3.fromRGB(0, 0, 0)
 windowControls.BorderSizePixel = 0
 windowControls.Size = UDim2.new(1, 0, 0, 31)
+windowControls.Visible = false
 local controls = Instance.new("Frame")
 controls.Name = "Controls"
 controls.BackgroundColor3 = Color3.fromRGB(119, 174, 94)
@@ -311,22 +270,16 @@ button.BackgroundTransparency = transparency
 button.Active = enabled
 button.Interactable = enabled
 for _, child in ipairs(button:GetChildren()) do
-if child:IsA("UIStroke") then
-child.Transparency = transparency
+if child:IsA("UIStroke") then child.Transparency = transparency end
 end
-end
-if not enabled then
-stroke:Clone().Parent = button
-end
+if not enabled then stroke:Clone().Parent = button end
 end
 applyState(maximize, false)
 local controlsList = {exit, minimize}
 for _, button in pairs(controlsList) do
 local buttonName = button.Name
 local isEnabled = true
-if Settings.DisabledWindowControls and table.find(Settings.DisabledWindowControls, buttonName) then
-isEnabled = false
-end
+if Settings.DisabledWindowControls and table.find(Settings.DisabledWindowControls, buttonName) then isEnabled = false end
 applyState(button, isEnabled)
 end
 controls.Parent = windowControls
@@ -347,8 +300,8 @@ information.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
 information.BackgroundTransparency = 1
 information.BorderColor3 = Color3.fromRGB(0, 0, 0)
 information.BorderSizePixel = 0
-information.Position = UDim2.fromOffset(0, 31)
-information.Size = UDim2.new(1, 0, 0, 60)
+information.Position = UDim2.fromOffset(0, 0)
+information.Size = UDim2.new(1, 0, 0, 63)
 local divider2 = Instance.new("Frame")
 divider2.Name = "Divider"
 divider2.AnchorPoint = Vector2.new(0, 1)
@@ -371,7 +324,7 @@ informationHolderUIPadding.Name = "InformationHolderUIPadding"
 informationHolderUIPadding.PaddingBottom = UDim.new(0, 10)
 informationHolderUIPadding.PaddingLeft = UDim.new(0, 23)
 informationHolderUIPadding.PaddingRight = UDim.new(0, 22)
-informationHolderUIPadding.PaddingTop = UDim.new(0, 10)
+informationHolderUIPadding.PaddingTop = UDim.new(0, 12)
 informationHolderUIPadding.Parent = informationHolder
 local titleFrame = Instance.new("Frame")
 titleFrame.Name = "TitleFrame"
@@ -382,11 +335,7 @@ titleFrame.BorderSizePixel = 0
 titleFrame.Size = UDim2.fromScale(1, 1)
 local title = Instance.new("TextLabel")
 title.Name = "Title"
-title.FontFace = Font.new(
-assets.interFont,
-Enum.FontWeight.SemiBold,
-Enum.FontStyle.Normal
-)
+title.FontFace = Font.new(assets.interFont, Enum.FontWeight.SemiBold, Enum.FontStyle.Normal)
 title.Text = Settings.Title
 title.TextColor3 = Color3.fromRGB(255, 255, 255)
 title.RichText = true
@@ -404,11 +353,7 @@ title.Size = UDim2.new(1, -20, 0, 0)
 title.Parent = titleFrame
 local subtitle = Instance.new("TextLabel")
 subtitle.Name = "Subtitle"
-subtitle.FontFace = Font.new(
-assets.interFont,
-Enum.FontWeight.Medium,
-Enum.FontStyle.Normal
-)
+subtitle.FontFace = Font.new(assets.interFont, Enum.FontWeight.Medium, Enum.FontStyle.Normal)
 subtitle.RichText = true
 subtitle.Text = Settings.Subtitle
 subtitle.RichText = true
@@ -441,8 +386,8 @@ sidebarGroup.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
 sidebarGroup.BackgroundTransparency = 1
 sidebarGroup.BorderColor3 = Color3.fromRGB(0, 0, 0)
 sidebarGroup.BorderSizePixel = 0
-sidebarGroup.Position = UDim2.fromOffset(0, 91)
-sidebarGroup.Size = UDim2.new(1, 0, 1, -91)
+sidebarGroup.Position = UDim2.fromOffset(0, 63)
+sidebarGroup.Size = UDim2.new(1, 0, 1, -63)
 local userInfo = Instance.new("Frame")
 userInfo.Name = "UserInfo"
 userInfo.AnchorPoint = Vector2.new(0, 1)
@@ -503,11 +448,7 @@ userAndDisplayFrame.LayoutOrder = 1
 userAndDisplayFrame.Size = UDim2.new(1, -42, 0, 32)
 local displayName = Instance.new("TextLabel")
 displayName.Name = "DisplayName"
-displayName.FontFace = Font.new(
-assets.interFont,
-Enum.FontWeight.SemiBold,
-Enum.FontStyle.Normal
-)
+displayName.FontFace = Font.new(assets.interFont, Enum.FontWeight.SemiBold, Enum.FontStyle.Normal)
 displayName.Text = LocalPlayer.DisplayName
 displayName.TextColor3 = Color3.fromRGB(255, 255, 255)
 displayName.TextSize = 13
@@ -534,11 +475,7 @@ userAndDisplayFrameUIListLayout.SortOrder = Enum.SortOrder.LayoutOrder
 userAndDisplayFrameUIListLayout.Parent = userAndDisplayFrame
 local username = Instance.new("TextLabel")
 username.Name = "Username"
-username.FontFace = Font.new(
-assets.interFont,
-Enum.FontWeight.SemiBold,
-Enum.FontStyle.Normal
-)
+username.FontFace = Font.new(assets.interFont, Enum.FontWeight.SemiBold, Enum.FontStyle.Normal)
 username.Text = "@" .. LocalPlayer.Name
 username.TextColor3 = Color3.fromRGB(255, 255, 255)
 username.TextSize = 12
@@ -600,14 +537,6 @@ tabSwitchersScrollingFrameUIPadding.Parent = tabSwitchersScrollingFrame
 tabSwitchersScrollingFrame.Parent = tabSwitchers
 tabSwitchers.Parent = sidebarGroup
 sidebarGroup.Parent = sidebar
---// [PATCH] hide window dots + raise title/subtitle
-windowControls.Visible = false
-information.Position = UDim2.fromOffset(0, 6)
-information.Size = UDim2.new(1, 0, 0, 66)
-sidebarGroup.Position = UDim2.fromOffset(0, 72)
-sidebarGroup.Size = UDim2.new(1, 0, 1, -72)
-informationHolderUIPadding.PaddingTop = UDim.new(0, 12)
-informationHolderUIPadding.PaddingBottom = UDim.new(0, 8)
 sidebar.Parent = base
 local content = Instance.new("Frame")
 content.Name = "Content"
@@ -617,7 +546,6 @@ content.BackgroundTransparency = 1
 content.BorderColor3 = Color3.fromRGB(0, 0, 0)
 content.BorderSizePixel = 0
 content.Position = UDim2.fromScale(1, 4.69e-08)
---// [PATCH] scale-safe content sizing (fixes mobile layout)
 local function getSidebarWidthUnscaled()
 local baseWidth = base.Size.X.Offset
 return baseWidth * sidebar.Size.X.Scale + sidebar.Size.X.Offset
@@ -642,21 +570,15 @@ Tween(divider, TweenInfo.new(0.2, TweenSettings.EasingStyle), {
 BackgroundTransparency = State == "Idle" and TweenSettings.DefaultTransparency or TweenSettings.HoverTransparency
 }):Play()
 end
-dividerInteract.MouseEnter:Connect(function()
-ChangeState("Hover")
-end)
-dividerInteract.MouseLeave:Connect(function()
-ChangeState("Idle")
-end)
+dividerInteract.MouseEnter:Connect(function() ChangeState("Hover") end)
+dividerInteract.MouseLeave:Connect(function() ChangeState("Idle") end)
 dividerInteract.MouseButton1Down:Connect(function()
 resizingContent = true
 initialMouseX = UserInputService:GetMouseLocation().X
 initialSidebarWidth = getSidebarWidthUnscaled()
 end)
 UserInputService.InputEnded:Connect(function(input)
-if input.UserInputType == Enum.UserInputType.MouseButton1 then
-resizingContent = false
-end
+if input.UserInputType == Enum.UserInputType.MouseButton1 then resizingContent = false end
 end)
 UserInputService.InputChanged:Connect(function(input)
 if resizingContent and input.UserInputType == Enum.UserInputType.MouseMovement then
@@ -731,21 +653,13 @@ interact.Size = UDim2.fromOffset(40, 40)
 interact.Parent = moveIcon
 local function ChangemoveIconState(State)
 if State == "Default" then
-Tween(moveIcon, TweenInfo.new(0.2, Enum.EasingStyle.Sine), {
-ImageTransparency = 0.7
-}):Play()
+Tween(moveIcon, TweenInfo.new(0.2, Enum.EasingStyle.Sine), { ImageTransparency = 0.7 }):Play()
 elseif State == "Hover" then
-Tween(moveIcon, TweenInfo.new(0.2, Enum.EasingStyle.Sine), {
-ImageTransparency = 0.4
-}):Play()
+Tween(moveIcon, TweenInfo.new(0.2, Enum.EasingStyle.Sine), { ImageTransparency = 0.4 }):Play()
 end
 end
-interact.MouseEnter:Connect(function()
-ChangemoveIconState("Hover")
-end)
-interact.MouseLeave:Connect(function()
-ChangemoveIconState("Default")
-end)
+interact.MouseEnter:Connect(function() ChangemoveIconState("Hover") end)
+interact.MouseLeave:Connect(function() ChangemoveIconState("Default") end)
 local dragging_ = false
 local dragInput
 local dragStart
@@ -759,52 +673,22 @@ if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType
 dragging_ = true
 dragStart = input.Position
 startPos = base.Position
-input.Changed:Connect(function()
-if input.UserInputState == Enum.UserInputState.End then
-dragging_ = false
-end
-end)
+input.Changed:Connect(function() if input.UserInputState == Enum.UserInputState.End then dragging_ = false end end)
 end
 end
 local function onDragUpdate(input)
-if dragging_ and (input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch) then
-dragInput = input
-end
+if dragging_ and (input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch) then dragInput = input end
 end
 if not Settings.DragStyle or Settings.DragStyle == 1 then
-interact.InputBegan:Connect(function(input)
-if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
-onDragStart(input)
-end
-end)
+interact.InputBegan:Connect(function(input) if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then onDragStart(input) end end)
 interact.InputChanged:Connect(onDragUpdate)
-UserInputService.InputChanged:Connect(function(input)
-if input == dragInput and dragging_ then
-update(input)
-end
-end)
-interact.InputEnded:Connect(function(input)
-if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
-dragging_ = false
-end
-end)
+UserInputService.InputChanged:Connect(function(input) if input == dragInput and dragging_ then update(input) end end)
+interact.InputEnded:Connect(function(input) if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then dragging_ = false end end)
 elseif Settings.DragStyle == 2 then
-base.InputBegan:Connect(function(input)
-if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
-onDragStart(input)
-end
-end)
+base.InputBegan:Connect(function(input) if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then onDragStart(input) end end)
 base.InputChanged:Connect(onDragUpdate)
-UserInputService.InputChanged:Connect(function(input)
-if input == dragInput and dragging_ then
-update(input)
-end
-end)
-base.InputEnded:Connect(function(input)
-if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
-dragging_ = false
-end
-end)
+UserInputService.InputChanged:Connect(function(input) if input == dragInput and dragging_ then update(input) end end)
+base.InputEnded:Connect(function(input) if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then dragging_ = false end end)
 end
 local currentTab = Instance.new("TextLabel")
 currentTab.Name = "CurrentTab"
@@ -831,12 +715,8 @@ elements.Parent = topbar
 topbar.Parent = content
 content.Parent = base
 base.Parent = macLib
-function WindowFunctions:UpdateTitle(NewTitle)
-title.Text = NewTitle
-end
-function WindowFunctions:UpdateSubtitle(NewSubtitle)
-subtitle.Text = NewSubtitle
-end
+function WindowFunctions:UpdateTitle(NewTitle) title.Text = NewTitle end
+function WindowFunctions:UpdateSubtitle(NewSubtitle) subtitle.Text = NewSubtitle end
 local BlurTarget = base
 local HS = HttpService
 local camera = workspace.CurrentCamera
@@ -853,9 +733,7 @@ DepthOfField.InFocusRadius = 50
 DepthOfField.NearIntensity = 1
 DepthOfField.Name = HS:GenerateGUID(true)
 DepthOfField:AddTag(".")
-elseif v:IsA("DepthOfFieldEffect") and v:HasTag(".") then
-DepthOfField = v
-end
+elseif v:IsA("DepthOfFieldEffect") and v:HasTag(".") then DepthOfField = v end
 end
 if not DepthOfField then
 DepthOfField = Instance.new('DepthOfFieldEffect')
@@ -874,14 +752,9 @@ frame.AnchorPoint = Vector2.new(0.5, 0.5)
 frame.BackgroundTransparency = 1
 frame.Name = HS:GenerateGUID(true)
 do
-local function IsNotNaN(x)
-return x == x
-end
+local function IsNotNaN(x) return x == x end
 local continue = IsNotNaN(camera:ScreenPointToRay(0,0).Origin.x)
-while not continue do
-RunService.RenderStepped:Wait()
-continue = IsNotNaN(camera:ScreenPointToRay(0,0).Origin.x)
-end
+while not continue do RunService.RenderStepped:Wait() continue = IsNotNaN(camera:ScreenPointToRay(0,0).Origin.x) end
 end
 local DrawQuad; do
 local acos, max, pi, sqrt = math.acos, math.max, math.pi, math.sqrt
@@ -892,13 +765,7 @@ local s2 = (v2 - v3).magnitude
 local s3 = (v3 - v1).magnitude
 local smax = max(s1, s2, s3)
 local A, B, C
-if s1 == smax then
-A, B, C = v1, v2, v3
-elseif s2 == smax then
-A, B, C = v2, v3, v1
-elseif s3 == smax then
-A, B, C = v3, v1, v2
-end
+if s1 == smax then A, B, C = v1, v2, v3 elseif s2 == smax then A, B, C = v2, v3, v1 elseif s3 == smax then A, B, C = v3, v1, v2 end
 local para = ( (B-A).x*(C-A).x + (B-A).y*(C-A).y + (B-A).z*(C-A).z ) / (A-B).magnitude
 local perp = sqrt((C-A).magnitude^2 - para*para)
 local dif_para = (A - B).magnitude - para
@@ -911,14 +778,10 @@ local Needed_Look = CFrame.new(Mid_Point, C).lookVector
 local dot = Top_Look.x*Needed_Look.x + Top_Look.y*Needed_Look.y + Top_Look.z*Needed_Look.z
 local ac = CFrame.Angles(0, 0, acos(dot))
 cf0 = cf0 * ac
-if ((cf0 * za).lookVector - Needed_Look).magnitude > 0.01 then
-cf0 = cf0 * CFrame.Angles(0, 0, -2*acos(dot))
-end
+if ((cf0 * za).lookVector - Needed_Look).magnitude > 0.01 then cf0 = cf0 * CFrame.Angles(0, 0, -2*acos(dot)) end
 cf0 = cf0 * CFrame.new(0, perp/2, -(dif_para + para/2))
-local cf1 = st * ac * CFrame.Angles(0, pi, 0)
-if ((cf1 * za).lookVector - Needed_Look).magnitude > 0.01 then
-cf1 = cf1 * CFrame.Angles(0, 0, 2*acos(dot))
-end
+local cf1 = st * ac * CFrame.Angles(0, math.pi, 0)
+if ((cf1 * za).lookVector - Needed_Look).magnitude > 0.01 then cf1 = cf1 * CFrame.Angles(0, 0, 2*acos(dot)) end
 cf1 = cf1 * CFrame.new(0, perp/2, dif_para/2)
 if not p0 then
 p0 = Instance.new('Part')
@@ -937,9 +800,7 @@ mesh.Name = wedgeguid
 end
 p0[wedgeguid].Scale = Vector3.new(0, perp/sz, para/sz)
 p0.CFrame = cf0
-if not p1 then
-p1 = p0:clone()
-end
+if not p1 then p1 = p0:clone() end
 p1[wedgeguid].Scale = Vector3.new(0, perp/sz, dif_para/sz)
 p1.CFrame = cf1
 return p0, p1
@@ -949,61 +810,35 @@ parts[1], parts[2] = DrawTriangle(v1, v2, v3, parts[1], parts[2])
 parts[3], parts[4] = DrawTriangle(v3, v2, v4, parts[3], parts[4])
 end
 end
-if binds[frame] then
-return binds[frame].parts
-end
+if binds[frame] then return binds[frame].parts end
 local parts = {}
 local parents = {}
 do
-local function add(child)
-if child:IsA'GuiObject' then
-parents[#parents + 1] = child
-add(child.Parent)
-end
-end
+local function add(child) if child:IsA'GuiObject' then parents[#parents + 1] = child add(child.Parent) end end
 add(frame)
 end
 local function IsVisible(instance)
 while instance do
-if instance:IsA("GuiObject") then
-if not instance.Visible then
-return false
-end
-elseif instance:IsA("ScreenGui") then
-if not instance.Enabled then
-return false
-end
-break
-end
+if instance:IsA("GuiObject") then if not instance.Visible then return false end
+elseif instance:IsA("ScreenGui") then if not instance.Enabled then return false end break end
 instance = instance.Parent
 end
 return true
 end
 local function UpdateOrientation(fetchProps)
 if not IsVisible(frame) or not acrylicBlur or unloaded then
-for _, pt in pairs(parts) do
-pt.Parent = nil
-DepthOfField.Enabled = false
-DepthOfField.Parent = nil
-end
+for _, pt in pairs(parts) do pt.Parent = nil DepthOfField.Enabled = false DepthOfField.Parent = nil end
 return
 end
-if not DepthOfField.Parent then
-DepthOfField.Parent = Lighting
-end
+if not DepthOfField.Parent then DepthOfField.Parent = Lighting end
 DepthOfField.Enabled = true
-local properties = {
-Transparency = 0.98;
-BrickColor = BrickColor.new('Institutional white');
-}
+local properties = { Transparency = 0.98; BrickColor = BrickColor.new('Institutional white'); }
 local zIndex = 1 - 0.05*frame.ZIndex
 local tl, br = frame.AbsolutePosition, frame.AbsolutePosition + frame.AbsoluteSize
 local tr, bl = Vector2.new(br.x, tl.y), Vector2.new(tl.x, br.y)
 do
 local rot = 0;
-for _, v in ipairs(parents) do
-rot = rot + v.Rotation
-end
+for _, v in ipairs(parents) do rot = rot + v.Rotation end
 if rot ~= 0 and rot%180 ~= 0 then
 local mid = tl:lerp(br, 0.5)
 local s, c = math.sin(math.rad(rot)), math.cos(math.rad(rot))
@@ -1022,14 +857,8 @@ camera:ScreenPointToRay(br.x, br.y, zIndex).Origin,
 parts
 )
 if fetchProps then
-for _, pt in pairs(parts) do
-pt.Parent = camera
-end
-for propName, propValue in pairs(properties) do
-for _, pt in pairs(parts) do
-pt[propName] = propValue
-end
-end
+for _, pt in pairs(parts) do pt.Parent = camera end
+for propName, propValue in pairs(properties) do for _, pt in pairs(parts) do pt[propName] = propValue end end
 end
 end
 UpdateOrientation(true)
@@ -1123,11 +952,7 @@ tabImage.Parent = tabSwitcher
 end
 local tabSwitcherName = Instance.new("TextLabel")
 tabSwitcherName.Name = "TabSwitcherName"
-tabSwitcherName.FontFace = Font.new(
-assets.interFont,
-Enum.FontWeight.Medium,
-Enum.FontStyle.Normal
-)
+tabSwitcherName.FontFace = Font.new(assets.interFont, Enum.FontWeight.Medium, Enum.FontStyle.Normal)
 tabSwitcherName.Text = Settings.Name
 tabSwitcherName.RichText = true
 tabSwitcherName.TextColor3 = Color3.fromRGB(255, 255, 255)
@@ -1225,7 +1050,6 @@ rightUIListLayout.SortOrder = Enum.SortOrder.LayoutOrder
 rightUIListLayout.Parent = right
 right.Parent = elementsScrolling
 elementsScrolling.Parent = elements1
---// [PATCH] Subtab system (dropdown styled + animated like the normal Dropdown element)
 local subtabs = {}
 local subtabOrder = {}
 local currentSubTab = nil
@@ -1247,7 +1071,7 @@ subtabSelector.Name = "SubtabSelector"
 subtabSelector.BackgroundTransparency = 1
 subtabSelector.AnchorPoint = Vector2.new(0, 0.5)
 subtabSelector.Position = UDim2.new(0, 0, 0.5, 0)
-subtabSelector.Size = UDim2.new(1, -45, 0, 38)
+subtabSelector.Size = UDim2.new(1, -25, 0, 38)
 subtabSelector.Visible = false
 subtabSelector.ZIndex = 100
 subtabSelector.Parent = elements
@@ -1272,6 +1096,10 @@ subtabButtonStroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
 subtabButtonStroke.Color = Color3.fromRGB(255, 255, 255)
 subtabButtonStroke.Transparency = 0.95
 subtabButtonStroke.Parent = subtabButton
+local subtabButtonPadding = Instance.new("UIPadding")
+subtabButtonPadding.Name = "SubtabButtonPadding"
+subtabButtonPadding.PaddingRight = UDim.new(0, 15)
+subtabButtonPadding.Parent = subtabButton
 local subtabLabel = Instance.new("TextLabel")
 subtabLabel.Name = "SubtabLabel"
 subtabLabel.FontFace = Font.new(assets.interFont)
@@ -1283,13 +1111,12 @@ subtabLabel.TextTransparency = 0.5
 subtabLabel.TextTruncate = Enum.TextTruncate.SplitWord
 subtabLabel.TextXAlignment = Enum.TextXAlignment.Left
 subtabLabel.AnchorPoint = Vector2.new(0, 0.5)
-subtabLabel.AutomaticSize = Enum.AutomaticSize.Y
 subtabLabel.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
 subtabLabel.BackgroundTransparency = 1
 subtabLabel.BorderColor3 = Color3.fromRGB(0, 0, 0)
 subtabLabel.BorderSizePixel = 0
 subtabLabel.Position = UDim2.new(0, 15, 0.5, 0)
-subtabLabel.Size = UDim2.new(1, -45, 0, 38)
+subtabLabel.Size = UDim2.new(1, -35, 0, 0)
 subtabLabel.ZIndex = 102
 subtabLabel.Parent = subtabButton
 local subtabArrow = Instance.new("ImageLabel")
@@ -1305,14 +1132,19 @@ subtabArrow.Position = UDim2.new(1, 0, 0, 12)
 subtabArrow.Size = UDim2.fromOffset(14, 14)
 subtabArrow.ZIndex = 102
 subtabArrow.Parent = subtabButton
-local subtabList = Instance.new("Frame")
+local subtabList = Instance.new("ScrollingFrame")
 subtabList.Name = "SubtabList"
-subtabList.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
-subtabList.BackgroundTransparency = 0.985
-subtabList.BorderColor3 = Color3.fromRGB(0, 0, 0)
+subtabList.AutomaticCanvasSize = Enum.AutomaticSize.Y
+subtabList.CanvasSize = UDim2.new()
+subtabList.BottomImage = ""
+subtabList.TopImage = ""
+subtabList.ScrollBarImageTransparency = 0.5
+subtabList.ScrollBarThickness = 2
+subtabList.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
+subtabList.BackgroundTransparency = 0
 subtabList.BorderSizePixel = 0
 subtabList.ClipsDescendants = true
-subtabList.Position = UDim2.new(0, 0, 1, 5)
+subtabList.Position = UDim2.new(0, 0, 1, 4)
 subtabList.Size = UDim2.new(1, 0, 0, 0)
 subtabList.Visible = false
 subtabList.ZIndex = 110
@@ -1325,7 +1157,7 @@ local subtabListStroke = Instance.new("UIStroke")
 subtabListStroke.Name = "SubtabListStroke"
 subtabListStroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
 subtabListStroke.Color = Color3.fromRGB(255, 255, 255)
-subtabListStroke.Transparency = 0.95
+subtabListStroke.Transparency = 0.9
 subtabListStroke.Parent = subtabList
 local subtabListLayout = Instance.new("UIListLayout")
 subtabListLayout.Name = "SubtabListLayout"
@@ -1339,48 +1171,39 @@ subtabListPadding.PaddingBottom = UDim.new(0, 5)
 subtabListPadding.Parent = subtabList
 local listOpen = false
 local listDb = false
+local MAX_LIST_ROWS = 5
 local subtabTweensettings = {
 duration = 0.2,
 easingStyle = Enum.EasingStyle.Quint,
 transparencyIn = 0.2,
 transparencyOut = 0.5,
-checkSizeIncrease = 12,
-checkSizeDecrease = -10,
 }
 local function getListHeight()
 local count = #subtabOrder
-if count == 0 then
-return 0
-end
-return 10 + (count * 30) + ((count - 1) * 5)
+if count == 0 then return 0 end
+local rows = math.min(count, MAX_LIST_ROWS)
+return 10 + (rows * 30) + math.max(0, (rows - 1) * 5)
 end
 local function setSubTabListOpen(state)
 if listDb then return end
-if state == listOpen and subtabList.Visible == state then return end
+if state == listOpen then return end
 listDb = true
 listOpen = state
 local targetSize = state and UDim2.new(1, 0, 0, getListHeight()) or UDim2.new(1, 0, 0, 0)
-local dropTween = Tween(subtabList, TweenInfo.new(0.2, Enum.EasingStyle.Exponential, Enum.EasingDirection.Out), {
-Size = targetSize
-})
-local iconTween = Tween(subtabArrow, TweenInfo.new(0.2, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
-Rotation = state and -90 or 0
-})
+local dropTween = Tween(subtabList, TweenInfo.new(0.2, Enum.EasingStyle.Exponential, Enum.EasingDirection.Out), { Size = targetSize })
+local iconTween = Tween(subtabArrow, TweenInfo.new(0.2, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), { Rotation = state and -90 or 0 })
 if state then
+subtabList.CanvasPosition = Vector2.new(0, 0)
 subtabList.Visible = true
 end
 dropTween:Play()
 iconTween:Play()
 dropTween.Completed:Connect(function()
-if not state then
-subtabList.Visible = false
-end
+if not state then subtabList.Visible = false end
 listDb = false
 end)
 end
-subtabButton.MouseButton1Click:Connect(function()
-setSubTabListOpen(not listOpen)
-end)
+subtabButton.MouseButton1Click:Connect(function() setSubTabListOpen(not listOpen) end)
 UserInputService.InputEnded:Connect(function(input)
 if not (subtabSelector.Visible and listOpen) then return end
 if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
@@ -1392,9 +1215,7 @@ local p = gui.AbsolutePosition
 local s = gui.AbsoluteSize
 return mouse.X >= p.X and mouse.X <= p.X + s.X and mouse.Y >= p.Y and mouse.Y <= p.Y + s.Y
 end
-if not inside(subtabSelector) and not inside(subtabList) then
-setSubTabListOpen(false)
-end
+if not inside(subtabSelector) and not inside(subtabList) then setSubTabListOpen(false) end
 end)
 end
 end)
@@ -1403,15 +1224,13 @@ local data = subtabs[name]
 if not data then return end
 for otherName, other in pairs(subtabs) do
 other.Page.Visible = false
-if other.Checkmark then
+if other.Tweens then
 if otherName == name then
 other.Tweens.checkIn:Play()
 other.Tweens.nameIn:Play()
-other.Checkmark.TextTransparency = 0
 else
 other.Tweens.checkOut:Play()
 other.Tweens.nameOut:Play()
-other.Checkmark.TextTransparency = 1
 end
 end
 end
@@ -1430,12 +1249,7 @@ pageRight = right
 else
 page, pageLeft, pageRight = makePage()
 end
-subtabs[name] = {
-Name = name,
-Page = page,
-Left = pageLeft,
-Right = pageRight,
-}
+subtabs[name] = { Name = name, Page = page, Left = pageLeft, Right = pageRight, }
 table.insert(subtabOrder, name)
 local option = Instance.new("TextButton")
 option.Name = "Option"
@@ -1450,9 +1264,11 @@ option.BorderSizePixel = 0
 option.Size = UDim2.new(1, 0, 0, 30)
 option.LayoutOrder = #subtabOrder
 option.ZIndex = 111
+option.Parent = subtabList
 local optionUIPadding = Instance.new("UIPadding")
 optionUIPadding.Name = "OptionUIPadding"
 optionUIPadding.PaddingLeft = UDim.new(0, 15)
+optionUIPadding.PaddingRight = UDim.new(0, 15)
 optionUIPadding.Parent = option
 local optionName = Instance.new("TextLabel")
 optionName.Name = "OptionName"
@@ -1464,23 +1280,15 @@ optionName.TextSize = 13
 optionName.TextTransparency = 0.5
 optionName.TextTruncate = Enum.TextTruncate.AtEnd
 optionName.TextXAlignment = Enum.TextXAlignment.Left
-optionName.TextYAlignment = Enum.TextYAlignment.Top
 optionName.AnchorPoint = Vector2.new(0, 0.5)
-optionName.AutomaticSize = Enum.AutomaticSize.XY
 optionName.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
 optionName.BackgroundTransparency = 1
 optionName.BorderColor3 = Color3.fromRGB(0, 0, 0)
 optionName.BorderSizePixel = 0
-optionName.Position = UDim2.fromScale(1.3e-07, 0.5)
+optionName.Position = UDim2.new(0, 0, 0.5, 0)
+optionName.Size = UDim2.new(1, -20, 1, 0)
 optionName.ZIndex = 112
 optionName.Parent = option
-local optionUIListLayout = Instance.new("UIListLayout")
-optionUIListLayout.Name = "OptionUIListLayout"
-optionUIListLayout.Padding = UDim.new(0, 10)
-optionUIListLayout.FillDirection = Enum.FillDirection.Horizontal
-optionUIListLayout.SortOrder = Enum.SortOrder.LayoutOrder
-optionUIListLayout.VerticalAlignment = Enum.VerticalAlignment.Center
-optionUIListLayout.Parent = option
 local checkmark = Instance.new("TextLabel")
 checkmark.Name = "Checkmark"
 checkmark.FontFace = Font.new(assets.interFont)
@@ -1488,39 +1296,29 @@ checkmark.Text = "✓"
 checkmark.TextColor3 = Color3.fromRGB(255, 255, 255)
 checkmark.TextSize = 13
 checkmark.TextTransparency = 1
-checkmark.TextXAlignment = Enum.TextXAlignment.Left
-checkmark.TextYAlignment = Enum.TextYAlignment.Top
-checkmark.AnchorPoint = Vector2.new(0, 0.5)
-checkmark.AutomaticSize = Enum.AutomaticSize.Y
+checkmark.TextXAlignment = Enum.TextXAlignment.Right
+checkmark.AnchorPoint = Vector2.new(1, 0.5)
 checkmark.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
 checkmark.BackgroundTransparency = 1
 checkmark.BorderColor3 = Color3.fromRGB(0, 0, 0)
 checkmark.BorderSizePixel = 0
-checkmark.LayoutOrder = -1
-checkmark.Position = UDim2.fromScale(1.3e-07, 0.5)
-checkmark.Size = UDim2.fromOffset(-10, 0)
+checkmark.Position = UDim2.new(1, 0, 0.5, 0)
+checkmark.Size = UDim2.fromOffset(14, 14)
 checkmark.ZIndex = 112
 checkmark.Parent = option
-option.Parent = subtabList
 subtabs[name].OptionText = optionName
 subtabs[name].Checkmark = checkmark
 subtabs[name].Tweens = {
-checkIn = Tween(checkmark, TweenInfo.new(subtabTweensettings.duration, subtabTweensettings.easingStyle), {
-Size = UDim2.new(checkmark.Size.X.Scale, subtabTweensettings.checkSizeIncrease, checkmark.Size.Y.Scale, checkmark.Size.Y.Offset)
-}),
-checkOut = Tween(checkmark, TweenInfo.new(subtabTweensettings.duration, subtabTweensettings.easingStyle), {
-Size = UDim2.new(checkmark.Size.X.Scale, subtabTweensettings.checkSizeDecrease, checkmark.Size.Y.Scale, checkmark.Size.Y.Offset)
-}),
-nameIn = Tween(optionName, TweenInfo.new(subtabTweensettings.duration, subtabTweensettings.easingStyle), {
-TextTransparency = subtabTweensettings.transparencyIn
-}),
-nameOut = Tween(optionName, TweenInfo.new(subtabTweensettings.duration, subtabTweensettings.easingStyle), {
-TextTransparency = subtabTweensettings.transparencyOut
-}),
+checkIn = Tween(checkmark, TweenInfo.new(0.15, subtabTweensettings.easingStyle), { TextTransparency = 0 }),
+checkOut = Tween(checkmark, TweenInfo.new(0.15, subtabTweensettings.easingStyle), { TextTransparency = 1 }),
+nameIn = Tween(optionName, TweenInfo.new(subtabTweensettings.duration, subtabTweensettings.easingStyle), { TextTransparency = subtabTweensettings.transparencyIn }),
+nameOut = Tween(optionName, TweenInfo.new(subtabTweensettings.duration, subtabTweensettings.easingStyle), { TextTransparency = subtabTweensettings.transparencyOut }),
 }
-option.MouseButton1Click:Connect(function()
-selectSubTab(name)
+option.MouseEnter:Connect(function()
+if currentSubTab ~= name then Tween(option, TweenInfo.new(0.15, Enum.EasingStyle.Sine), { BackgroundTransparency = 0.95 }):Play() end
 end)
+option.MouseLeave:Connect(function() Tween(option, TweenInfo.new(0.15, Enum.EasingStyle.Sine), { BackgroundTransparency = 1 }):Play() end)
+option.MouseButton1Click:Connect(function() selectSubTab(name) end)
 if #subtabOrder == 1 then
 selectSubTab(name)
 if currentTabInstance == elements1 then
@@ -1531,18 +1329,12 @@ end
 end
 function TabFunctions:SubTab(Settings)
 local name = Settings
-if type(Settings) == "table" then
-name = Settings.Name
-end
-if type(name) ~= "string" or name == "" then
-return
-end
+if type(Settings) == "table" then name = Settings.Name end
+if type(name) ~= "string" or name == "" then return end
 addSubTab(name)
 return {
 Name = name,
-Select = function()
-selectSubTab(name)
-end,
+Select = function() selectSubTab(name) end,
 Section = function(_, settings)
 settings = settings or {}
 settings.Page = name
@@ -1633,49 +1425,23 @@ buttonImage.BorderSizePixel = 0
 buttonImage.Position = UDim2.fromScale(1, 0.5)
 buttonImage.Size = UDim2.fromOffset(15, 15)
 buttonImage.Parent = button
-local TweenSettings = {
-DefaultTransparency = 0.5,
-HoverTransparency = 0.3,
-EasingStyle = Enum.EasingStyle.Sine
-}
+local TweenSettings = { DefaultTransparency = 0.5, HoverTransparency = 0.3, EasingStyle = Enum.EasingStyle.Sine }
 local function ChangeState(State)
 if State == "Idle" then
-Tween(buttonInteract, TweenInfo.new(0.2, TweenSettings.EasingStyle), {
-TextTransparency = TweenSettings.DefaultTransparency
-}):Play()
-Tween(buttonImage, TweenInfo.new(0.2, TweenSettings.EasingStyle), {
-ImageTransparency = TweenSettings.DefaultTransparency
-}):Play()
+Tween(buttonInteract, TweenInfo.new(0.2, TweenSettings.EasingStyle), { TextTransparency = TweenSettings.DefaultTransparency }):Play()
+Tween(buttonImage, TweenInfo.new(0.2, TweenSettings.EasingStyle), { ImageTransparency = TweenSettings.DefaultTransparency }):Play()
 elseif State == "Hover" then
-Tween(buttonInteract, TweenInfo.new(0.2, TweenSettings.EasingStyle), {
-TextTransparency = TweenSettings.HoverTransparency
-}):Play()
-Tween(buttonImage, TweenInfo.new(0.2, TweenSettings.EasingStyle), {
-ImageTransparency = TweenSettings.HoverTransparency
-}):Play()
+Tween(buttonInteract, TweenInfo.new(0.2, TweenSettings.EasingStyle), { TextTransparency = TweenSettings.HoverTransparency }):Play()
+Tween(buttonImage, TweenInfo.new(0.2, TweenSettings.EasingStyle), { ImageTransparency = TweenSettings.HoverTransparency }):Play()
 end
 end
-local function Callback()
-if ButtonFunctions.Settings.Callback then
-ButtonFunctions.Settings.Callback()
-end
-end
-buttonInteract.MouseEnter:Connect(function()
-ChangeState("Hover")
-end)
-buttonInteract.MouseLeave:Connect(function()
-ChangeState("Idle")
-end)
+local function Callback() if ButtonFunctions.Settings.Callback then ButtonFunctions.Settings.Callback() end end
+buttonInteract.MouseEnter:Connect(function() ChangeState("Hover") end)
+buttonInteract.MouseLeave:Connect(function() ChangeState("Idle") end)
 buttonInteract.MouseButton1Click:Connect(Callback)
-function ButtonFunctions:UpdateName(Name)
-buttonInteract.Text = Name
-end
-function ButtonFunctions:SetVisibility(State)
-button.Visible = State
-end
-if Flag then
-MacLib.Options[Flag] = ButtonFunctions
-end
+function ButtonFunctions:UpdateName(Name) buttonInteract.Text = Name end
+function ButtonFunctions:SetVisibility(State) button.Visible = State end
+if Flag then MacLib.Options[Flag] = ButtonFunctions end
 return ButtonFunctions
 end
 function SectionFunctions:Toggle(Settings, Flag)
@@ -1746,55 +1512,26 @@ togglerHead.ImageTransparency = 0.8
 toggle1.Parent = toggle
 local toggle1Transparency = {Enabled = 0, Disabled = 0.5}
 local togglerHeadTransparency = {Enabled = 0, Disabled = 0.85}
-local TweenSettings = {
-Info = TweenInfo.new(0.15, Enum.EasingStyle.Quad),
-EnabledPosition = UDim2.new(1, 0, 0.5, 0),
-DisabledPosition = UDim2.new(0.5, 0, 0.5, 0),
-}
+local TweenSettings = { Info = TweenInfo.new(0.15, Enum.EasingStyle.Quad), EnabledPosition = UDim2.new(1, 0, 0.5, 0), DisabledPosition = UDim2.new(0.5, 0, 0.5, 0), }
 local togglebool = ToggleFunctions.Settings.Default
 local function NewState(State, callback)
-local transparencyValues = State and {toggle1Transparency.Enabled, togglerHeadTransparency.Enabled}
-or {toggle1Transparency.Disabled, togglerHeadTransparency.Disabled}
+local transparencyValues = State and {toggle1Transparency.Enabled, togglerHeadTransparency.Enabled} or {toggle1Transparency.Disabled, togglerHeadTransparency.Disabled}
 local position = State and TweenSettings.EnabledPosition or TweenSettings.DisabledPosition
-Tween(toggle1, TweenSettings.Info, {
-ImageTransparency = transparencyValues[1]
-}):Play()
-Tween(togglerHead, TweenSettings.Info, {
-ImageTransparency = transparencyValues[2]
-}):Play()
-Tween(togglerHead, TweenSettings.Info, {
-Position = position
-}):Play()
+Tween(toggle1, TweenSettings.Info, { ImageTransparency = transparencyValues[1] }):Play()
+Tween(togglerHead, TweenSettings.Info, { ImageTransparency = transparencyValues[2] }):Play()
+Tween(togglerHead, TweenSettings.Info, { Position = position }):Play()
 ToggleFunctions.State = State
-if callback then
-callback(togglebool)
-end
+if callback then callback(togglebool) end
 end
 NewState(togglebool)
-local function Toggle()
-togglebool = not togglebool
-NewState(togglebool, ToggleFunctions.Settings.Callback)
-end
+local function Toggle() togglebool = not togglebool NewState(togglebool, ToggleFunctions.Settings.Callback) end
 toggle1.MouseButton1Click:Connect(Toggle)
-function ToggleFunctions:Toggle()
-Toggle()
-end
-function ToggleFunctions:UpdateState(State)
-togglebool = State
-NewState(togglebool, ToggleFunctions.Settings.Callback)
-end
-function ToggleFunctions:GetState()
-return togglebool
-end
-function ToggleFunctions:UpdateName(Name)
-toggleName.Text = Name
-end
-function ToggleFunctions:SetVisibility(State)
-toggle.Visible = State
-end
-if Flag then
-MacLib.Options[Flag] = ToggleFunctions
-end
+function ToggleFunctions:Toggle() Toggle() end
+function ToggleFunctions:UpdateState(State) togglebool = State NewState(togglebool, ToggleFunctions.Settings.Callback) end
+function ToggleFunctions:GetState() return togglebool end
+function ToggleFunctions:UpdateName(Name) toggleName.Text = Name end
+function ToggleFunctions:SetVisibility(State) toggle.Visible = State end
+if Flag then MacLib.Options[Flag] = ToggleFunctions end
 return ToggleFunctions
 end
 function SectionFunctions:Slider(Settings, Flag)
@@ -1903,30 +1640,12 @@ sliderElementsUIPadding.Parent = sliderElements
 sliderElements.Parent = slider
 local dragging = false
 local DisplayMethods = {
-Hundredths = function(sliderValue)
-return string.format("%.2f", sliderValue)
-end,
-Tenths = function(sliderValue)
-return string.format("%.1f", sliderValue)
-end,
-Round = function(sliderValue, precision)
-if precision then
-return string.format("%." .. precision .. "f", sliderValue)
-else
-return tostring(math.round(sliderValue))
-end
-end,
-Degrees = function(sliderValue, precision)
-local formattedValue = precision and string.format("%." .. precision .. "f", sliderValue) or tostring(sliderValue)
-return formattedValue .. "°"
-end,
-Percent = function(sliderValue, precision)
-local percentage = (sliderValue - SliderFunctions.Settings.Minimum) / (SliderFunctions.Settings.Maximum - SliderFunctions.Settings.Minimum) * 100
-return precision and string.format("%." .. precision .. "f", percentage) .. "%" or tostring(math.round(percentage)) .. "%"
-end,
-Value = function(sliderValue, precision)
-return precision and string.format("%." .. precision .. "f", sliderValue) or tostring(sliderValue)
-end
+Hundredths = function(sliderValue) return string.format("%.2f", sliderValue) end,
+Tenths = function(sliderValue) return string.format("%.1f", sliderValue) end,
+Round = function(sliderValue, precision) if precision then return string.format("%." .. precision .. "f", sliderValue) else return tostring(math.round(sliderValue)) end end,
+Degrees = function(sliderValue, precision) local formattedValue = precision and string.format("%." .. precision .. "f", sliderValue) or tostring(sliderValue) return formattedValue .. "°" end,
+Percent = function(sliderValue, precision) local percentage = (sliderValue - SliderFunctions.Settings.Minimum) / (SliderFunctions.Settings.Maximum - SliderFunctions.Settings.Minimum) * 100 return precision and string.format("%." .. precision .. "f", percentage) .. "%" or tostring(math.round(percentage)) .. "%" end,
+Value = function(sliderValue, precision) return precision and string.format("%." .. precision .. "f", sliderValue) or tostring(sliderValue) end
 }
 local ValueDisplayMethod = DisplayMethods[SliderFunctions.Settings.DisplayMethod] or DisplayMethods.Value
 local finalValue
@@ -1943,53 +1662,27 @@ local pos = UDim2.new(posXScale, 0, 0.5, 0)
 sliderHead.Position = pos
 finalValue = posXScale * (SliderFunctions.Settings.Maximum - SliderFunctions.Settings.Minimum) + Settings.Minimum
 sliderValue.Text = (Settings.Prefix or "") .. ValueDisplayMethod(finalValue, SliderFunctions.Settings.Precision) .. (Settings.Suffix or "")
-if not ignorecallback then
-task.spawn(function()
-if SliderFunctions.Settings.Callback then
-SliderFunctions.Settings.Callback(finalValue)
-end
-end)
-end
+if not ignorecallback then task.spawn(function() if SliderFunctions.Settings.Callback then SliderFunctions.Settings.Callback(finalValue) end end) end
 SliderFunctions.Value = finalValue
 end
 SetValue(SliderFunctions.Settings.Default, true)
-sliderHead.InputBegan:Connect(function(input)
-if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
-dragging = true
-SetValue(input)
-end
-end)
-sliderHead.InputEnded:Connect(function(input)
-if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
-dragging = false
-if SliderFunctions.Settings.onInputComplete then
-SliderFunctions.Settings.onInputComplete(finalValue)
-end
-end
-end)
+sliderHead.InputBegan:Connect(function(input) if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then dragging = true SetValue(input) end end)
+sliderHead.InputEnded:Connect(function(input) if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then dragging = false if SliderFunctions.Settings.onInputComplete then SliderFunctions.Settings.onInputComplete(finalValue) end end end)
 sliderValue.FocusLost:Connect(function(enterPressed)
 local inputText = sliderValue.Text
 local value, isPercent = inputText:match("^(%-?%d+%.?%d*)(%%?)$")
 if value then
 value = tonumber(value)
 isPercent = isPercent == "%"
-if isPercent then
-value = SliderFunctions.Settings.Minimum + (value / 100) * (SliderFunctions.Settings.Maximum - SliderFunctions.Settings.Minimum)
-end
+if isPercent then value = SliderFunctions.Settings.Minimum + (value / 100) * (SliderFunctions.Settings.Maximum - SliderFunctions.Settings.Minimum) end
 local newValue = math.clamp(value, SliderFunctions.Settings.Minimum, SliderFunctions.Settings.Maximum)
 SetValue(newValue)
 else
 sliderValue.Text = ValueDisplayMethod(sliderValue)
 end
-if SliderFunctions.Settings.onInputComplete then
-SliderFunctions.Settings.onInputComplete(finalValue)
-end
+if SliderFunctions.Settings.onInputComplete then SliderFunctions.Settings.onInputComplete(finalValue) end
 end)
-UserInputService.InputChanged:Connect(function(input)
-if dragging and (input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch) then
-SetValue(input)
-end
-end)
+UserInputService.InputChanged:Connect(function(input) if dragging and (input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch) then SetValue(input) end end)
 local function updateSliderBarSize()
 local padding = sliderElementsUIListLayout.Padding.Offset
 local sliderValueWidth = sliderValue.AbsoluteSize.X
@@ -2001,21 +1694,11 @@ end
 updateSliderBarSize()
 sliderName:GetPropertyChangedSignal("AbsoluteSize"):Connect(updateSliderBarSize)
 section:GetPropertyChangedSignal("AbsoluteSize"):Connect(updateSliderBarSize)
-function SliderFunctions:UpdateName(Name)
-sliderName = Name
-end
-function SliderFunctions:SetVisibility(State)
-slider.Visible = State
-end
-function SliderFunctions:UpdateValue(Value)
-SetValue(tonumber(Value), true)
-end
-function SliderFunctions:GetValue()
-return finalValue
-end
-if Flag then
-MacLib.Options[Flag] = SliderFunctions
-end
+function SliderFunctions:UpdateName(Name) sliderName = Name end
+function SliderFunctions:SetVisibility(State) slider.Visible = State end
+function SliderFunctions:UpdateValue(Value) SetValue(tonumber(Value), true) end
+function SliderFunctions:GetValue() return finalValue end
+if Flag then MacLib.Options[Flag] = SliderFunctions end
 return SliderFunctions
 end
 function SectionFunctions:Input(Settings, Flag)
@@ -2089,88 +1772,29 @@ local Input = input
 local InputBox = inputBox
 local InputName = inputName
 local Constraint = inputBoxUISizeConstraint
-local function applyCharacterLimit(value)
-if InputFunctions.Settings.CharacterLimit then
-return value:sub(1, InputFunctions.Settings.CharacterLimit)
-end
-return value
-end
+local function applyCharacterLimit(value) if InputFunctions.Settings.CharacterLimit then return value:sub(1, InputFunctions.Settings.CharacterLimit) end return value end
 local CharacterSubs = {
-All = function(value)
-return applyCharacterLimit(value)
-end,
-Numeric = function(value)
-local result = value:match("^%-?%d*$") and value or value:gsub("[^%d-]", ""):gsub("(%-)", function(match, pos)
-return pos == 1 and match or ""
-end)
-return applyCharacterLimit(result)
-end,
-Alphabetic = function(value)
-return applyCharacterLimit(value:gsub("[^a-zA-Z ]", ""))
-end,
-AlphaNumeric = function(value)
-return applyCharacterLimit(value:gsub("[^a-zA-Z0-9]", ""))
-end,
+All = function(value) return applyCharacterLimit(value) end,
+Numeric = function(value) local result = value:match("^%-?%d*$") and value or value:gsub("[^%d-]", ""):gsub("(%-)", function(match, pos) return pos == 1 and match or "" end) return applyCharacterLimit(result) end,
+Alphabetic = function(value) return applyCharacterLimit(value:gsub("[^a-zA-Z ]", "")) end,
+AlphaNumeric = function(value) return applyCharacterLimit(value:gsub("[^a-zA-Z0-9]", "")) end,
 }
 local AcceptedCharacters
-if type(InputFunctions.Settings.AcceptedCharacters) == "function" then
-AcceptedCharacters = InputFunctions.Settings.AcceptedCharacters
-else
-AcceptedCharacters = CharacterSubs[InputFunctions.Settings.AcceptedCharacters] or CharacterSubs.All
-end
+if type(InputFunctions.Settings.AcceptedCharacters) == "function" then AcceptedCharacters = InputFunctions.Settings.AcceptedCharacters else AcceptedCharacters = CharacterSubs[InputFunctions.Settings.AcceptedCharacters] or CharacterSubs.All end
 InputBox.AutomaticSize = Enum.AutomaticSize.X
-local function checkSize()
-local nameWidth = InputName.AbsoluteSize.X
-local totalWidth = Input.AbsoluteSize.X
-local maxWidth = (totalWidth - nameWidth - 20) / baseUIScale.Scale
-Constraint.MaxSize = Vector2.new(maxWidth, 9e9)
-end
+local function checkSize() local nameWidth = InputName.AbsoluteSize.X local totalWidth = Input.AbsoluteSize.X local maxWidth = (totalWidth - nameWidth - 20) / baseUIScale.Scale Constraint.MaxSize = Vector2.new(maxWidth, 9e9) end
 checkSize()
 InputName:GetPropertyChangedSignal("AbsoluteSize"):Connect(checkSize)
-InputBox.FocusLost:Connect(function()
-local inputText = InputBox.Text
-local filteredText = AcceptedCharacters(inputText)
-InputBox.Text = filteredText
-task.spawn(function()
-if InputFunctions.Settings.Callback then
-InputFunctions.Settings.Callback(filteredText)
-end
-end)
-end)
+InputBox.FocusLost:Connect(function() local inputText = InputBox.Text local filteredText = AcceptedCharacters(inputText) InputBox.Text = filteredText task.spawn(function() if InputFunctions.Settings.Callback then InputFunctions.Settings.Callback(filteredText) end end) end)
 InputBox.Text = InputFunctions.Settings.Default or ""
 InputBox.PlaceholderText = InputFunctions.Settings.Placeholder or ""
-InputBox:GetPropertyChangedSignal("Text"):Connect(function()
-InputBox.Text = AcceptedCharacters(InputBox.Text)
-if InputFunctions.Settings.onChanged then
-InputFunctions.Settings.onChanged(InputBox.Text)
-end
-InputFunctions.Text = InputBox.Text
-end)
-function InputFunctions:UpdateName(Name)
-inputName.Text = Name
-end
-function InputFunctions:SetVisibility(State)
-input.Visible = State
-end
-function InputFunctions:GetInput()
-return InputBox.Text
-end
-function InputFunctions:UpdatePlaceholder(Placeholder)
-inputBox.PlaceholderText = Placeholder
-end
-function InputFunctions:UpdateText(Text)
-local filteredText = AcceptedCharacters(Text)
-InputBox.Text = filteredText
-InputFunctions.Text = filteredText
-task.spawn(function()
-if InputFunctions.Settings.Callback then
-InputFunctions.Settings.Callback(filteredText)
-end
-end)
-end
-if Flag then
-MacLib.Options[Flag] = InputFunctions
-end
+InputBox:GetPropertyChangedSignal("Text"):Connect(function() InputBox.Text = AcceptedCharacters(InputBox.Text) if InputFunctions.Settings.onChanged then InputFunctions.Settings.onChanged(InputBox.Text) end InputFunctions.Text = InputBox.Text end)
+function InputFunctions:UpdateName(Name) inputName.Text = Name end
+function InputFunctions:SetVisibility(State) input.Visible = State end
+function InputFunctions:GetInput() return InputBox.Text end
+function InputFunctions:UpdatePlaceholder(Placeholder) inputBox.PlaceholderText = Placeholder end
+function InputFunctions:UpdateText(Text) local filteredText = AcceptedCharacters(Text) InputBox.Text = filteredText InputFunctions.Text = filteredText task.spawn(function() if InputFunctions.Settings.Callback then InputFunctions.Settings.Callback(filteredText) end end) end
+if Flag then MacLib.Options[Flag] = InputFunctions end
 return InputFunctions
 end
 function SectionFunctions:Keybind(Settings, Flag)
@@ -2245,87 +1869,36 @@ local focused
 local isBinding = false
 local reset = false
 local binded = KeybindFunctions.Settings.Default
-local function resetFocusState()
-focused = false
-isBinding = false
-binderBox:ReleaseFocus()
-end
-if binded then
-binderBox.Text = binded.Name
-end
-binderBox.Focused:Connect(function()
-focused = true
-end)
-binderBox.FocusLost:Connect(function()
-focused = false
-end)
+local function resetFocusState() focused = false isBinding = false binderBox:ReleaseFocus() end
+if binded then binderBox.Text = binded.Name end
+binderBox.Focused:Connect(function() focused = true end)
+binderBox.FocusLost:Connect(function() focused = false end)
 UserInputService.InputBegan:Connect(function(inp)
 if focused and not isBinding then
 isBinding = true
 local Event
 Event = UserInputService.InputBegan:Connect(function(input)
-if KeybindFunctions.Settings.Blacklist and (table.find(KeybindFunctions.Settings.Blacklist, input.KeyCode) or table.find(KeybindFunctions.Settings.Blacklist, input.UserInputType)) then
-binderBox:ReleaseFocus()
-resetFocusState()
-Event:Disconnect()
-return
-end
-if input.UserInputType == Enum.UserInputType.Keyboard then
-binded = input.KeyCode
-binderBox.Text = input.KeyCode.Name
-elseif input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.MouseButton2 then
-binded = input.UserInputType
-binderBox.Text = input.UserInputType.Name
-end
-if KeybindFunctions.Settings.onBinded then
-KeybindFunctions.Settings.onBinded(binded)
-end
+if KeybindFunctions.Settings.Blacklist and (table.find(KeybindFunctions.Settings.Blacklist, input.KeyCode) or table.find(KeybindFunctions.Settings.Blacklist, input.UserInputType)) then binderBox:ReleaseFocus() resetFocusState() Event:Disconnect() return end
+if input.UserInputType == Enum.UserInputType.Keyboard then binded = input.KeyCode binderBox.Text = input.KeyCode.Name elseif input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.MouseButton2 then binded = input.UserInputType binderBox.Text = input.UserInputType.Name end
+if KeybindFunctions.Settings.onBinded then KeybindFunctions.Settings.onBinded(binded) end
 reset = true
 resetFocusState()
 Event:Disconnect()
 end)
 else
 if not reset and (inp.KeyCode == binded or inp.UserInputType == binded) then
-if KeybindFunctions.Settings.Callback then
-KeybindFunctions.Settings.Callback(binded)
-end
-if KeybindFunctions.Settings.onBindHeld then
-KeybindFunctions.Settings.onBindHeld(true, binded)
-end
-else
-reset = false
-end
+if KeybindFunctions.Settings.Callback then KeybindFunctions.Settings.Callback(binded) end
+if KeybindFunctions.Settings.onBindHeld then KeybindFunctions.Settings.onBindHeld(true, binded) end
+else reset = false end
 end
 end)
-UserInputService.InputEnded:Connect(function(inp)
-if not focused and not isBinding then
-if inp.KeyCode == binded or inp.UserInputType == binded then
-if Settings.onBindHeld then
-Settings.onBindHeld(false, binded)
-end
-end
-end
-end)
-function KeybindFunctions:Bind(Key)
-binded = Key
-binderBox.Text = Key.Name
-end
-function KeybindFunctions:Unbind()
-binded = nil
-binderBox.Text = ""
-end
-function KeybindFunctions:GetBind()
-return binded
-end
-function KeybindFunctions:UpdateName(Name)
-keybindName = Name
-end
-function KeybindFunctions:SetVisibility(State)
-keybind.Visible = State
-end
-if Flag then
-MacLib.Options[Flag] = KeybindFunctions
-end
+UserInputService.InputEnded:Connect(function(inp) if not focused and not isBinding then if inp.KeyCode == binded or inp.UserInputType == binded then if Settings.onBindHeld then Settings.onBindHeld(false, binded) end end end end)
+function KeybindFunctions:Bind(Key) binded = Key binderBox.Text = Key.Name end
+function KeybindFunctions:Unbind() binded = nil binderBox.Text = "" end
+function KeybindFunctions:GetBind() return binded end
+function KeybindFunctions:UpdateName(Name) keybindName = Name end
+function KeybindFunctions:SetVisibility(State) keybind.Visible = State end
+if Flag then MacLib.Options[Flag] = KeybindFunctions end
 return KeybindFunctions
 end
 function SectionFunctions:Dropdown(Settings, Flag)
@@ -2397,8 +1970,14 @@ dropdownImage.BorderSizePixel = 0
 dropdownImage.Position = UDim2.new(1, 0, 0, 12)
 dropdownImage.Size = UDim2.fromOffset(14, 14)
 dropdownImage.Parent = dropdown
-local dropdownFrame = Instance.new("Frame")
+local dropdownFrame = Instance.new("ScrollingFrame")
 dropdownFrame.Name = "DropdownFrame"
+dropdownFrame.AutomaticCanvasSize = Enum.AutomaticSize.Y
+dropdownFrame.CanvasSize = UDim2.new()
+dropdownFrame.BottomImage = ""
+dropdownFrame.TopImage = ""
+dropdownFrame.ScrollBarImageTransparency = 0.8
+dropdownFrame.ScrollBarThickness = 2
 dropdownFrame.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
 dropdownFrame.BackgroundTransparency = 1
 dropdownFrame.BorderColor3 = Color3.fromRGB(0, 0, 0)
@@ -2406,7 +1985,6 @@ dropdownFrame.BorderSizePixel = 0
 dropdownFrame.ClipsDescendants = true
 dropdownFrame.Size = UDim2.fromScale(1, 1)
 dropdownFrame.Visible = false
-dropdownFrame.AutomaticSize = Enum.AutomaticSize.Y
 local dropdownFrameUIPadding = Instance.new("UIPadding")
 dropdownFrameUIPadding.Name = "DropdownFrameUIPadding"
 dropdownFrameUIPadding.PaddingTop = UDim.new(0, 38)
@@ -2449,11 +2027,7 @@ uIPadding.Parent = search
 local searchBox = Instance.new("TextBox")
 searchBox.Name = "SearchBox"
 searchBox.CursorPosition = -1
-searchBox.FontFace = Font.new(
-assets.interFont,
-Enum.FontWeight.Medium,
-Enum.FontStyle.Normal
-)
+searchBox.FontFace = Font.new(assets.interFont, Enum.FontWeight.Medium, Enum.FontStyle.Normal)
 searchBox.PlaceholderColor3 = Color3.fromRGB(150, 150, 150)
 searchBox.PlaceholderText = "Search..."
 searchBox.Text = ""
@@ -2470,22 +2044,18 @@ local totalHeight = 0
 local visibleChildrenCount = 0
 local padding = dropdownFrameUIPadding.PaddingTop.Offset + dropdownFrameUIPadding.PaddingBottom.Offset
 for _, v in pairs(dropdownFrame:GetChildren()) do
-if not v:IsA("UIComponent") and v.Visible then
-totalHeight += v.AbsoluteSize.Y
-visibleChildrenCount += 1
+if not v:IsA("UIComponent") and v.Visible then totalHeight += v.AbsoluteSize.Y visibleChildrenCount += 1 end
 end
-end
-local spacing = dropdownFrameUIListLayout.Padding.Offset * (visibleChildrenCount - 1)
-return totalHeight + spacing + padding
+local spacing = dropdownFrameUIListLayout.Padding.Offset * math.max(0, visibleChildrenCount - 1)
+local fullHeight = totalHeight + spacing + padding
+return math.min(fullHeight, 250)
 end
 local function findOption()
 local searchTerm = searchBox.Text:lower()
 for _, v in pairs(OptionObjs) do
 local optionText = v.NameLabel.Text:lower()
 local isVisible = string.find(optionText, searchTerm) ~= nil
-if v.Button.Visible ~= isVisible then
-v.Button.Visible = isVisible
-end
+if v.Button.Visible ~= isVisible then v.Button.Visible = isVisible end
 end
 dropdown.Size = UDim2.new(1, 0, 0, CalculateDropdownSize())
 end
@@ -2495,15 +2065,7 @@ uIPadding1.Name = "UIPadding"
 uIPadding1.PaddingLeft = UDim.new(0, 23)
 uIPadding1.Parent = searchBox
 searchBox.Parent = search
-local tweensettings = {
-duration = 0.2,
-easingStyle = Enum.EasingStyle.Quint,
-transparencyIn = 0.2,
-transparencyOut = 0.5,
-checkSizeIncrease = 12,
-checkSizeDecrease = -13,
-waitTime = 1
-}
+local tweensettings = { duration = 0.2, easingStyle = Enum.EasingStyle.Quint, transparencyIn = 0.2, transparencyOut = 0.5, checkSizeIncrease = 12, checkSizeDecrease = -13, waitTime = 1 }
 local function Toggle(optionName, State)
 local option = OptionObjs[optionName]
 if not option then return end
@@ -2511,57 +2073,32 @@ local checkmark = option.Checkmark
 local optionNameLabel = option.NameLabel
 if State then
 if DropdownFunctions.Settings.Multi then
-if not table.find(Selected, optionName) then
-table.insert(Selected, optionName)
-DropdownFunctions.Value = Selected
-end
+if not table.find(Selected, optionName) then table.insert(Selected, optionName) DropdownFunctions.Value = Selected end
 else
 for name, opt in pairs(OptionObjs) do
 if name ~= optionName then
-Tween(opt.Checkmark, TweenInfo.new(tweensettings.duration, tweensettings.easingStyle), {
-Size = UDim2.new(opt.Checkmark.Size.X.Scale, tweensettings.checkSizeDecrease, opt.Checkmark.Size.Y.Scale, opt.Checkmark.Size.Y.Offset)
-}):Play()
-Tween(opt.NameLabel, TweenInfo.new(tweensettings.duration, tweensettings.easingStyle), {
-TextTransparency = tweensettings.transparencyOut
-}):Play()
+Tween(opt.Checkmark, TweenInfo.new(tweensettings.duration, tweensettings.easingStyle), { Size = UDim2.new(opt.Checkmark.Size.X.Scale, tweensettings.checkSizeDecrease, opt.Checkmark.Size.Y.Scale, opt.Checkmark.Size.Y.Offset) }):Play()
+Tween(opt.NameLabel, TweenInfo.new(tweensettings.duration, tweensettings.easingStyle), { TextTransparency = tweensettings.transparencyOut }):Play()
 opt.Checkmark.TextTransparency = 1
 end
 end
 Selected = {optionName}
 DropdownFunctions.Value = Selected[1]
 end
-Tween(checkmark, TweenInfo.new(tweensettings.duration, tweensettings.easingStyle), {
-Size = UDim2.new(checkmark.Size.X.Scale, tweensettings.checkSizeIncrease, checkmark.Size.Y.Scale, checkmark.Size.Y.Offset)
-}):Play()
-Tween(optionNameLabel, TweenInfo.new(tweensettings.duration, tweensettings.easingStyle), {
-TextTransparency = tweensettings.transparencyIn
-}):Play()
+Tween(checkmark, TweenInfo.new(tweensettings.duration, tweensettings.easingStyle), { Size = UDim2.new(checkmark.Size.X.Scale, tweensettings.checkSizeIncrease, checkmark.Size.Y.Scale, checkmark.Size.Y.Offset) }):Play()
+Tween(optionNameLabel, TweenInfo.new(tweensettings.duration, tweensettings.easingStyle), { TextTransparency = tweensettings.transparencyIn }):Play()
 checkmark.TextTransparency = 0
 else
 if DropdownFunctions.Settings.Multi then
 local idx = table.find(Selected, optionName)
-if idx then
-table.remove(Selected, idx)
-end
-else
-Selected = {}
-end
-Tween(checkmark, TweenInfo.new(tweensettings.duration, tweensettings.easingStyle), {
-Size = UDim2.new(checkmark.Size.X.Scale, tweensettings.checkSizeDecrease, checkmark.Size.Y.Scale, checkmark.Size.Y.Offset)
-}):Play()
-Tween(optionNameLabel, TweenInfo.new(tweensettings.duration, tweensettings.easingStyle), {
-TextTransparency = tweensettings.transparencyOut
-}):Play()
+if idx then table.remove(Selected, idx) end
+else Selected = {} end
+Tween(checkmark, TweenInfo.new(tweensettings.duration, tweensettings.easingStyle), { Size = UDim2.new(checkmark.Size.X.Scale, tweensettings.checkSizeDecrease, checkmark.Size.Y.Scale, checkmark.Size.Y.Offset) }):Play()
+Tween(optionNameLabel, TweenInfo.new(tweensettings.duration, tweensettings.easingStyle), { TextTransparency = tweensettings.transparencyOut }):Play()
 checkmark.TextTransparency = 1
 end
-if Settings.Required and #Selected == 0 and not State then
-return
-end
-if #Selected > 0 then
-dropdownName.Text = DropdownFunctions.Settings.Name .. " • " .. table.concat(Selected, ", ")
-else
-dropdownName.Text = DropdownFunctions.Settings.Name .. "..."
-end
+if Settings.Required and #Selected == 0 and not State then return end
+if #Selected > 0 then dropdownName.Text = DropdownFunctions.Settings.Name .. " • " .. table.concat(Selected, ", ") else dropdownName.Text = DropdownFunctions.Settings.Name .. "..." end
 end
 local dropped = false
 local db = false
@@ -2571,25 +2108,11 @@ db = true
 local defaultDropdownSize = 38
 local isDropdownOpen = not dropped
 local targetSize = isDropdownOpen and UDim2.new(1, 0, 0, CalculateDropdownSize()) or UDim2.new(1, 0, 0, defaultDropdownSize)
-local dropTween = Tween(dropdown, TweenInfo.new(0.2, Enum.EasingStyle.Exponential, Enum.EasingDirection.Out), {
-Size = targetSize
-})
-local iconTween = Tween(dropdownImage, TweenInfo.new(0.2, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
-Rotation = isDropdownOpen and -90 or 0
-})
+local dropTween = Tween(dropdown, TweenInfo.new(0.2, Enum.EasingStyle.Exponential, Enum.EasingDirection.Out), { Size = targetSize })
+local iconTween = Tween(dropdownImage, TweenInfo.new(0.2, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), { Rotation = isDropdownOpen and -90 or 0 })
 dropTween:Play()
 iconTween:Play()
-if isDropdownOpen then
-dropdownFrame.Visible = true
-dropTween.Completed:Connect(function()
-db = false
-end)
-else
-dropTween.Completed:Connect(function()
-dropdownFrame.Visible = false
-db = false
-end)
-end
+if isDropdownOpen then dropdownFrame.Visible = true dropTween.Completed:Connect(function() db = false end) else dropTween.Completed:Connect(function() dropdownFrame.Visible = false db = false end) end
 dropped = isDropdownOpen
 end
 interact.MouseButton1Click:Connect(ToggleDropdown)
@@ -2656,176 +2179,51 @@ checkmark.Size = UDim2.fromOffset(-10, 0)
 checkmark.Parent = option
 option.Parent = dropdownFrame
 dropdownFrame.Parent = dropdown
-OptionObjs[v] = {
-Index = i,
-Button = option,
-NameLabel = optionName,
-Checkmark = checkmark
-}
-local tweensettings = {
-duration = 0.2,
-easingStyle = Enum.EasingStyle.Quint,
-transparencyIn = 0.2,
-transparencyOut = 0.5,
-checkSizeIncrease = 12,
-checkSizeDecrease = -optionUIListLayout.Padding.Offset,
-waitTime = 1
-}
+OptionObjs[v] = { Index = i, Button = option, NameLabel = optionName, Checkmark = checkmark }
+local tweensettings = { duration = 0.2, easingStyle = Enum.EasingStyle.Quint, transparencyIn = 0.2, transparencyOut = 0.5, checkSizeIncrease = 12, checkSizeDecrease = -optionUIListLayout.Padding.Offset, waitTime = 1 }
 local tweens = {
-checkIn = Tween(checkmark, TweenInfo.new(tweensettings.duration, tweensettings.easingStyle), {
-Size = UDim2.new(checkmark.Size.X.Scale, tweensettings.checkSizeIncrease, checkmark.Size.Y.Scale, checkmark.Size.Y.Offset)
-}),
-checkOut = Tween(checkmark, TweenInfo.new(tweensettings.duration, tweensettings.easingStyle),{
-Size = UDim2.new(checkmark.Size.X.Scale, tweensettings.checkSizeDecrease, checkmark.Size.Y.Scale, checkmark.Size.Y.Offset)
-}),
-nameIn = Tween(optionName, TweenInfo.new(tweensettings.duration, tweensettings.easingStyle),{
-TextTransparency = tweensettings.transparencyIn
-}),
-nameOut = Tween(optionName, TweenInfo.new(tweensettings.duration, tweensettings.easingStyle),{
-TextTransparency = tweensettings.transparencyOut
-})
+checkIn = Tween(checkmark, TweenInfo.new(tweensettings.duration, tweensettings.easingStyle), { Size = UDim2.new(checkmark.Size.X.Scale, tweensettings.checkSizeIncrease, checkmark.Size.Y.Scale, checkmark.Size.Y.Offset) }),
+checkOut = Tween(checkmark, TweenInfo.new(tweensettings.duration, tweensettings.easingStyle),{ Size = UDim2.new(checkmark.Size.X.Scale, tweensettings.checkSizeDecrease, checkmark.Size.Y.Scale, checkmark.Size.Y.Offset) }),
+nameIn = Tween(optionName, TweenInfo.new(tweensettings.duration, tweensettings.easingStyle),{ TextTransparency = tweensettings.transparencyIn }),
+nameOut = Tween(optionName, TweenInfo.new(tweensettings.duration, tweensettings.easingStyle),{ TextTransparency = tweensettings.transparencyOut })
 }
 local isSelected = false
-if DropdownFunctions.Settings.Default then
-if DropdownFunctions.Settings.Multi then
-isSelected = table.find(DropdownFunctions.Settings.Default, v) and true or false
-else
-isSelected = (DropdownFunctions.Settings.Default == i) and true or false
-end
-end
+if DropdownFunctions.Settings.Default then if DropdownFunctions.Settings.Multi then isSelected = table.find(DropdownFunctions.Settings.Default, v) and true or false else isSelected = (DropdownFunctions.Settings.Default == i) and true or false end end
 Toggle(v, isSelected)
 local option = OptionObjs[v].Button
 option.MouseButton1Click:Connect(function()
 local isSelected = table.find(Selected, v) and true or false
 local newSelected = not isSelected
-if DropdownFunctions.Settings.Required and not newSelected and #Selected <= 1 then
-return
-end
+if DropdownFunctions.Settings.Required and not newSelected and #Selected <= 1 then return end
 Toggle(v, newSelected)
 task.spawn(function()
 if DropdownFunctions.Settings.Multi then
 local Return = {}
-for _, opt in ipairs(Selected) do
-Return[opt] = true
-end
-if DropdownFunctions.Settings.Callback then
-DropdownFunctions.Settings.Callback(Return)
-end
-else
-if newSelected and DropdownFunctions.Settings.Callback then
-DropdownFunctions.Settings.Callback(Selected[1] or nil)
-end
-end
+for _, opt in ipairs(Selected) do Return[opt] = true end
+if DropdownFunctions.Settings.Callback then DropdownFunctions.Settings.Callback(Return) end
+else if newSelected and DropdownFunctions.Settings.Callback then DropdownFunctions.Settings.Callback(Selected[1] or nil) end end
 end)
 end)
-if dropped then
-dropdown.Size = UDim2.new(1, 0, 0, CalculateDropdownSize())
+if dropped then dropdown.Size = UDim2.new(1, 0, 0, CalculateDropdownSize()) end
 end
-end
-if DropdownFunctions.Settings.Options then
-for i, v in pairs(DropdownFunctions.Settings.Options) do
-addOption(i, v)
-end
-end
-function DropdownFunctions:UpdateName(New)
-dropdownName.Text = New
-end
-function DropdownFunctions:SetVisibility(State)
-dropdown.Visible = State
-end
+if DropdownFunctions.Settings.Options then for i, v in pairs(DropdownFunctions.Settings.Options) do addOption(i, v) end end
+function DropdownFunctions:UpdateName(New) dropdownName.Text = New end
+function DropdownFunctions:SetVisibility(State) dropdown.Visible = State end
 function DropdownFunctions:UpdateSelection(newSelection)
 if not newSelection then return end
-for option, _ in pairs(OptionObjs) do
-Toggle(option, false)
-end
+for option, _ in pairs(OptionObjs) do Toggle(option, false) end
 local selectedOptions = {}
-if type(newSelection) == "number" then
-for option, data in pairs(OptionObjs) do
-local isSelected = data.Index == newSelection
-Toggle(option, isSelected)
-if isSelected then
-table.insert(selectedOptions, option)
+if type(newSelection) == "number" then for option, data in pairs(OptionObjs) do local isSelected = data.Index == newSelection Toggle(option, isSelected) if isSelected then table.insert(selectedOptions, option) end end
+elseif type(newSelection) == "string" then for option, data in pairs(OptionObjs) do local isSelected = option == newSelection Toggle(option, isSelected) if isSelected then table.insert(selectedOptions, option) end end
+elseif type(newSelection) == "table" then for option, _ in pairs(OptionObjs) do local isSelected = table.find(newSelection, option) ~= nil Toggle(option, isSelected) if isSelected then table.insert(selectedOptions, option) end end end
+if DropdownFunctions.Settings.Callback then if DropdownFunctions.Settings.Multi then local Return = {} for _, opt in ipairs(selectedOptions) do Return[opt] = true end DropdownFunctions.Settings.Callback(Return) else DropdownFunctions.Settings.Callback(selectedOptions[1] or nil) end end
 end
-end
-elseif type(newSelection) == "string" then
-for option, data in pairs(OptionObjs) do
-local isSelected = option == newSelection
-Toggle(option, isSelected)
-if isSelected then
-table.insert(selectedOptions, option)
-end
-end
-elseif type(newSelection) == "table" then
-for option, _ in pairs(OptionObjs) do
-local isSelected = table.find(newSelection, option) ~= nil
-Toggle(option, isSelected)
-if isSelected then
-table.insert(selectedOptions, option)
-end
-end
-end
-if DropdownFunctions.Settings.Callback then
-if DropdownFunctions.Settings.Multi then
-local Return = {}
-for _, opt in ipairs(selectedOptions) do
-Return[opt] = true
-end
-DropdownFunctions.Settings.Callback(Return)
-else
-DropdownFunctions.Settings.Callback(selectedOptions[1] or nil)
-end
-end
-end
-function DropdownFunctions:InsertOptions(newOptions)
-if not newOptions then return end
-DropdownFunctions.Settings.Options = newOptions
-for i, v in pairs(newOptions) do
-addOption(i, v)
-end
-end
-function DropdownFunctions:ClearOptions()
-for _, optionData in pairs(OptionObjs) do
-optionData.Button:Destroy()
-end
-OptionObjs = {}
-Selected = {}
-if dropped then
-dropdown.Size = UDim2.new(1, 0, 0, CalculateDropdownSize())
-end
-end
-function DropdownFunctions:GetOptions()
-local optionsStatus = {}
-for option, data in pairs(OptionObjs) do
-local isSelected = table.find(Selected, option) and true or false
-optionsStatus[option] = isSelected
-end
-return optionsStatus
-end
-function DropdownFunctions:RemoveOptions(remove)
-if not remove then return end
-for _, optionName in ipairs(remove) do
-local optionData = OptionObjs[optionName]
-if optionData then
-for i = #Selected, 1, -1 do
-if Selected[i] == optionName then
-table.remove(Selected, i)
-end
-end
-optionData.Button:Destroy()
-OptionObjs[optionName] = nil
-end
-end
-if dropped then
-dropdown.Size = UDim2.new(1, 0, 0, CalculateDropdownSize())
-end
-end
-function DropdownFunctions:IsOption(optionName)
-if not optionName then return end
-return OptionObjs[optionName] ~= nil
-end
-if Flag then
-MacLib.Options[Flag] = DropdownFunctions
-end
+function DropdownFunctions:InsertOptions(newOptions) if not newOptions then return end DropdownFunctions.Settings.Options = newOptions for i, v in pairs(newOptions) do addOption(i, v) end end
+function DropdownFunctions:ClearOptions() for _, optionData in pairs(OptionObjs) do optionData.Button:Destroy() end OptionObjs = {} Selected = {} if dropped then dropdown.Size = UDim2.new(1, 0, 0, CalculateDropdownSize()) end end
+function DropdownFunctions:GetOptions() local optionsStatus = {} for option, data in pairs(OptionObjs) do local isSelected = table.find(Selected, option) and true or false optionsStatus[option] = isSelected end return optionsStatus end
+function DropdownFunctions:RemoveOptions(remove) if not remove then return end for _, optionName in ipairs(remove) do local optionData = OptionObjs[optionName] if optionData then for i = #Selected, 1, -1 do if Selected[i] == optionName then table.remove(Selected, i) end end optionData.Button:Destroy() OptionObjs[optionName] = nil end end if dropped then dropdown.Size = UDim2.new(1, 0, 0, CalculateDropdownSize()) end end
+function DropdownFunctions:IsOption(optionName) if not optionName then return end return OptionObjs[optionName] ~= nil end
+if Flag then MacLib.Options[Flag] = DropdownFunctions end
 return DropdownFunctions
 end
 function SectionFunctions:Colorpicker(Settings, Flag)
@@ -2968,10 +2366,7 @@ value.Position = UDim2.fromScale(0.092, 0.886)
 value.Size = UDim2.new(1, 0, 0, 15)
 local uIGradient = Instance.new("UIGradient")
 uIGradient.Name = "UIGradient"
-uIGradient.Color = ColorSequence.new({
-ColorSequenceKeypoint.new(0, Color3.fromRGB(255, 255, 255)),
-ColorSequenceKeypoint.new(1, Color3.fromRGB(0, 0, 0)),
-})
+uIGradient.Color = ColorSequence.new({ ColorSequenceKeypoint.new(0, Color3.fromRGB(255, 255, 255)), ColorSequenceKeypoint.new(1, Color3.fromRGB(0, 0, 0)), })
 uIGradient.Parent = value
 local slide = Instance.new("Frame")
 slide.Name = "Slide"
@@ -3002,10 +2397,7 @@ uIStroke1.Color = Color3.fromRGB(255, 255, 255)
 uIStroke1.Transparency = 0.9
 local uIGradient1 = Instance.new("UIGradient")
 uIGradient1.Name = "UIGradient"
-uIGradient1.Color = ColorSequence.new({
-ColorSequenceKeypoint.new(0, Color3.fromRGB(255, 255, 255)),
-ColorSequenceKeypoint.new(1, Color3.fromRGB(0, 0, 0)),
-})
+uIGradient1.Color = ColorSequence.new({ ColorSequenceKeypoint.new(0, Color3.fromRGB(255, 255, 255)), ColorSequenceKeypoint.new(1, Color3.fromRGB(0, 0, 0)), })
 uIGradient1.Rotation = 180
 uIGradient1.Parent = uIStroke1
 uIStroke1.Parent = value
@@ -3522,11 +2914,7 @@ uIListLayout8.SortOrder = Enum.SortOrder.LayoutOrder
 uIListLayout8.Parent = interactions
 local confirm = Instance.new("TextButton")
 confirm.Name = "Confirm"
-confirm.FontFace = Font.new(
-"rbxassetid://12187365364",
-Enum.FontWeight.Medium,
-Enum.FontStyle.Normal
-)
+confirm.FontFace = Font.new("rbxassetid://12187365364", Enum.FontWeight.Medium, Enum.FontStyle.Normal)
 confirm.Text = "Confirm"
 confirm.TextColor3 = Color3.fromRGB(255, 255, 255)
 confirm.TextSize = 15
@@ -3552,11 +2940,7 @@ baseUICorner.Parent = confirm
 confirm.Parent = interactions
 local cancel = Instance.new("TextButton")
 cancel.Name = "Cancel"
-cancel.FontFace = Font.new(
-"rbxassetid://12187365364",
-Enum.FontWeight.Medium,
-Enum.FontStyle.Normal
-)
+cancel.FontFace = Font.new("rbxassetid://12187365364", Enum.FontWeight.Medium, Enum.FontStyle.Normal)
 cancel.Text = "Cancel"
 cancel.TextColor3 = Color3.fromRGB(255, 255, 255)
 cancel.TextSize = 15
@@ -3602,11 +2986,7 @@ paragraph.BorderSizePixel = 0
 paragraph.Size = UDim2.fromScale(1, 0)
 local paragraphHeader = Instance.new("TextLabel")
 paragraphHeader.Name = "ParagraphHeader"
-paragraphHeader.FontFace = Font.new(
-"rbxassetid://12187365364",
-Enum.FontWeight.SemiBold,
-Enum.FontStyle.Normal
-)
+paragraphHeader.FontFace = Font.new("rbxassetid://12187365364", Enum.FontWeight.SemiBold, Enum.FontStyle.Normal)
 paragraphHeader.RichText = true
 paragraphHeader.Text = ColorpickerFunctions.Settings.Name
 paragraphHeader.TextColor3 = Color3.fromRGB(255, 255, 255)
@@ -3648,40 +3028,15 @@ local wheel = wheel1
 local ring = target
 local slider = value
 local colour = color
-local modifierInputs = {
-Hex = hex.InputBox,
-Red = red.InputBox,
-Green = green.InputBox,
-Blue = blue.InputBox,
-Alpha = alpha.InputBox
-}
+local modifierInputs = { Hex = hex.InputBox, Red = red.InputBox, Green = green.InputBox, Blue = blue.InputBox, Alpha = alpha.InputBox }
 local Mouse = LocalPlayer:GetMouse()
 local WheelDown, SlideDown = false, false
 local hue, saturation, value = 0, 0, 1
-local function toPolar(v)
-return math.atan2(v.y, v.x), v.magnitude
-end
-local function radToDeg(x)
-return ((x + math.pi) / (2 * math.pi)) * 360
-end
-local function degToRad(degrees)
-return degrees * (math.pi / 180)
-end
-local function hexToRGB(hex)
-hex = hex:gsub("#","")
-if #hex ~= 6 then return 0, 0, 0 end
-local r = tonumber(hex:sub(1, 2), 16) or 0
-local g = tonumber(hex:sub(3, 4), 16) or 0
-local b = tonumber(hex:sub(5, 6), 16) or 0
-return r, g, b
-end
-local function clampInput(value, min, max)
-local num = tonumber(value)
-if num then
-return math.clamp(num, min, max)
-end
-return min
-end
+local function toPolar(v) return math.atan2(v.y, v.x), v.magnitude end
+local function radToDeg(x) return ((x + math.pi) / (2 * math.pi)) * 360 end
+local function degToRad(degrees) return degrees * (math.pi / 180) end
+local function hexToRGB(hex) hex = hex:gsub("#","") if #hex ~= 6 then return 0, 0, 0 end local r = tonumber(hex:sub(1, 2), 16) or 0 local g = tonumber(hex:sub(3, 4), 16) or 0 local b = tonumber(hex:sub(5, 6), 16) or 0 return r, g, b end
+local function clampInput(value, min, max) local num = tonumber(value) if num then return math.clamp(num, min, max) end return min end
 local function update()
 local c = fromHSV(hue, saturation, value)
 colour.BackgroundColor3 = c
@@ -3690,70 +3045,15 @@ modifierInputs.Red.Text = tostring(math.floor(c.r * 255 + 0.5))
 modifierInputs.Green.Text = tostring(math.floor(c.g * 255 + 0.5))
 modifierInputs.Blue.Text = tostring(math.floor(c.b * 255 + 0.5))
 modifierInputs.Alpha.Text = clampInput(modifierInputs.Alpha.Text, 0, 1)
-local hexColor = string.format("#%02X%02X%02X",
-math.floor(c.r * 255 + 0.5),
-math.floor(c.g * 255 + 0.5),
-math.floor(c.b * 255 + 0.5))
+local hexColor = string.format("#%02X%02X%02X", math.floor(c.r * 255 + 0.5), math.floor(c.g * 255 + 0.5), math.floor(c.b * 255 + 0.5))
 modifierInputs.Hex.Text = hexColor
 end
-local function UpdateSlide(iX)
-local rY = iX - slider.AbsolutePosition.X
-local cY = math.clamp(rY, 0, slider.AbsoluteSize.X - slide.AbsoluteSize.X)
-slide.Position = udim2(0, cY, 0.5, 0)
-value = 1 - (cY / (slider.AbsoluteSize.X - slide.AbsoluteSize.X))
-update()
-end
-local function UpdateRing(iX, iY)
-local r = wheel.AbsoluteSize.x / 2
-local d = v2(iX, iY) - wheel.AbsolutePosition - wheel.AbsoluteSize / 2
-if d:Dot(d) > r * r then
-d = d.unit * r
-end
-ring.Position = udim2(0.5, d.x, 0.5, d.y)
-local phi, len = toPolar(d * v2(1, -1))
-hue, saturation = radToDeg(phi) / 360, math.clamp(len / r, 0, 1)
-slider.BackgroundColor3 = fromHSV(hue, saturation, 1)
-update()
-end
-local function UpdateSlideFromValue(value)
-local cY = (1 - value) * (slider.AbsoluteSize.X - slide.AbsoluteSize.X)
-slide.Position = UDim2.new(0, cY, 0.5, 0)
-end
-local function UpdateRingFromHSV(hue, saturation)
-local r = wheel.AbsoluteSize.X / 2
-local phi = degToRad(hue * 360)
-local len = saturation * r
-local x = len * math.cos(phi)
-local y = len * math.sin(phi)
-ring.Position = UDim2.new(0.5, -x, 0.5, y)
-slider.BackgroundColor3 = fromHSV(hue, saturation, 1)
-end
-local function updateFromRGB()
-local r = clampInput(modifierInputs.Red.Text, 0, 255)
-local g = clampInput(modifierInputs.Green.Text, 0, 255)
-local b = clampInput(modifierInputs.Blue.Text, 0, 255)
-modifierInputs.Red.Text = r
-modifierInputs.Green.Text = g
-modifierInputs.Blue.Text = b
-hue, saturation, value = Color3.fromRGB(r, g, b):ToHSV()
-UpdateSlideFromValue(value)
-UpdateRingFromHSV(hue, saturation)
-update()
-end
-local function updateFromHex()
-local hex = modifierInputs.Hex.Text
-local r, g, b = hexToRGB(hex)
-r = clampInput(r, 0, 255)
-g = clampInput(g, 0, 255)
-b = clampInput(b, 0, 255)
-modifierInputs.Red.Text = r
-modifierInputs.Green.Text = g
-modifierInputs.Blue.Text = b
-hue, saturation, value = Color3.fromRGB(r, g, b):ToHSV()
-UpdateSlideFromValue(value)
-UpdateRingFromHSV(hue, saturation)
-update()
-end
+local function UpdateSlide(iX) local rY = iX - slider.AbsolutePosition.X local cY = math.clamp(rY, 0, slider.AbsoluteSize.X - slide.AbsoluteSize.X) slide.Position = udim2(0, cY, 0.5, 0) value = 1 - (cY / (slider.AbsoluteSize.X - slide.AbsoluteSize.X)) update() end
+local function UpdateRing(iX, iY) local r = wheel.AbsoluteSize.x / 2 local d = v2(iX, iY) - wheel.AbsolutePosition - wheel.AbsoluteSize / 2 if d:Dot(d) > r * r then d = d.unit * r end ring.Position = udim2(0.5, d.x, 0.5, d.y) local phi, len = toPolar(d * v2(1, -1)) hue, saturation = radToDeg(phi) / 360, math.clamp(len / r, 0, 1) slider.BackgroundColor3 = fromHSV(hue, saturation, 1) update() end
+local function UpdateSlideFromValue(value) local cY = (1 - value) * (slider.AbsoluteSize.X - slide.AbsoluteSize.X) slide.Position = UDim2.new(0, cY, 0.5, 0) end
+local function UpdateRingFromHSV(hue, saturation) local r = wheel.AbsoluteSize.X / 2 local phi = degToRad(hue * 360) local len = saturation * r local x = len * math.cos(phi) local y = len * math.sin(phi) ring.Position = UDim2.new(0.5, -x, 0.5, y) slider.BackgroundColor3 = fromHSV(hue, saturation, 1) end
+local function updateFromRGB() local r = clampInput(modifierInputs.Red.Text, 0, 255) local g = clampInput(modifierInputs.Green.Text, 0, 255) local b = clampInput(modifierInputs.Blue.Text, 0, 255) modifierInputs.Red.Text = r modifierInputs.Green.Text = g modifierInputs.Blue.Text = b hue, saturation, value = Color3.fromRGB(r, g, b):ToHSV() UpdateSlideFromValue(value) UpdateRingFromHSV(hue, saturation) update() end
+local function updateFromHex() local hex = modifierInputs.Hex.Text local r, g, b = hexToRGB(hex) r = clampInput(r, 0, 255) g = clampInput(g, 0, 255) b = clampInput(b, 0, 255) modifierInputs.Red.Text = r modifierInputs.Green.Text = g modifierInputs.Blue.Text = b hue, saturation, value = Color3.fromRGB(r, g, b):ToHSV() UpdateSlideFromValue(value) UpdateRingFromHSV(hue, saturation) update() end
 local function updateFromSettings()
 local r = math.floor(ColorpickerFunctions.Color.R * 255 + 0.5)
 local g = math.floor(ColorpickerFunctions.Color.G * 255 + 0.5)
@@ -3772,74 +3072,23 @@ colour.BackgroundTransparency = isAlpha and ColorpickerFunctions.Alpha or 0
 UpdateSlideFromValue(value)
 UpdateRingFromHSV(hue, saturation)
 end
-wheel.InputBegan:Connect(function(input)
-if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
-WheelDown = true
-UpdateRing(Mouse.X, Mouse.Y)
-end
-end)
-slider.InputBegan:Connect(function(input)
-if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
-SlideDown = true
-UpdateSlide(Mouse.X)
-end
-end)
-slider.InputEnded:Connect(function(input)
-if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
-SlideDown = false
-end
-end)
-wheel.InputEnded:Connect(function(input)
-if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
-WheelDown = false
-end
-end)
-UserInputService.InputChanged:Connect(function(input)
-if input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch then
-if SlideDown then
-UpdateSlide(Mouse.X)
-elseif WheelDown then
-UpdateRing(Mouse.X, Mouse.Y)
-end
-end
-end)
-local function onFocusEnter(instance)
-local placeholder = instance.Text
-instance.Text = ""
-instance.PlaceholderText = placeholder
-end
+wheel.InputBegan:Connect(function(input) if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then WheelDown = true UpdateRing(Mouse.X, Mouse.Y) end end)
+slider.InputBegan:Connect(function(input) if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then SlideDown = true UpdateSlide(Mouse.X) end end)
+slider.InputEnded:Connect(function(input) if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then SlideDown = false end end)
+wheel.InputEnded:Connect(function(input) if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then WheelDown = false end end)
+UserInputService.InputChanged:Connect(function(input) if input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch then if SlideDown then UpdateSlide(Mouse.X) elseif WheelDown then UpdateRing(Mouse.X, Mouse.Y) end end end)
+local function onFocusEnter(instance) local placeholder = instance.Text instance.Text = "" instance.PlaceholderText = placeholder end
 modifierInputs.Hex.FocusLost:Connect(updateFromHex)
 modifierInputs.Red.FocusLost:Connect(updateFromRGB)
 modifierInputs.Green.FocusLost:Connect(updateFromRGB)
 modifierInputs.Blue.FocusLost:Connect(updateFromRGB)
 modifierInputs.Alpha.FocusLost:Connect(update)
-modifierInputs.Hex.Focused:Connect(function()
-onFocusEnter(modifierInputs.Hex)
-end)
-modifierInputs.Red.Focused:Connect(function()
-onFocusEnter(modifierInputs.Red)
-end)
-modifierInputs.Green.Focused:Connect(function()
-onFocusEnter(modifierInputs.Green)
-end)
-modifierInputs.Blue.Focused:Connect(function()
-onFocusEnter(modifierInputs.Blue)
-end)
-modifierInputs.Alpha.Focused:Connect(function()
-onFocusEnter(modifierInputs.Alpha)
-end)
-local function makeCanvas()
-local ColorPickerCanvas = Instance.new("CanvasGroup")
-ColorPickerCanvas.Name = "ColorPickerCanvas"
-ColorPickerCanvas.BackgroundTransparency = 1
-ColorPickerCanvas.BorderSizePixel = 0
-ColorPickerCanvas.Size = UDim2.fromScale(1, 1)
-ColorPickerCanvas.ZIndex = 5
-ColorPickerCanvas.GroupTransparency = 1
-ColorPickerCanvas.Parent = base
-ColorPickerCanvas.Visible = false
-return ColorPickerCanvas
-end
+modifierInputs.Hex.Focused:Connect(function() onFocusEnter(modifierInputs.Hex) end)
+modifierInputs.Red.Focused:Connect(function() onFocusEnter(modifierInputs.Red) end)
+modifierInputs.Green.Focused:Connect(function() onFocusEnter(modifierInputs.Green) end)
+modifierInputs.Blue.Focused:Connect(function() onFocusEnter(modifierInputs.Blue) end)
+modifierInputs.Alpha.Focused:Connect(function() onFocusEnter(modifierInputs.Alpha) end)
+local function makeCanvas() local ColorPickerCanvas = Instance.new("CanvasGroup") ColorPickerCanvas.Name = "ColorPickerCanvas" ColorPickerCanvas.BackgroundTransparency = 1 ColorPickerCanvas.BorderSizePixel = 0 ColorPickerCanvas.Size = UDim2.fromScale(1, 1) ColorPickerCanvas.ZIndex = 5 ColorPickerCanvas.GroupTransparency = 1 ColorPickerCanvas.Parent = base ColorPickerCanvas.Visible = false return ColorPickerCanvas end
 local function transition(isIn)
 local canvas = makeCanvas()
 local tweenTransparency = isIn and 0 or 1
@@ -3855,19 +3104,12 @@ canvas.GroupTransparency = stateTransparency
 canvasTween:Play()
 scaleTween:Play()
 canvasTween.Completed:Wait()
-if not isIn then
-colorPicker.Visible = false
-canvas.Visible = false
-end
+if not isIn then colorPicker.Visible = false canvas.Visible = false end
 colorPicker.Parent = base
 canvas:Destroy()
 end
-local function colorpickerIn()
-transition(true)
-end
-local function colorpickerOut()
-transition(false)
-end
+local function colorpickerIn() transition(true) end
+local function colorpickerOut() transition(false) end
 interact.MouseButton1Click:Connect(colorpickerIn)
 cancel.MouseButton1Click:Connect(colorpickerOut)
 confirm.MouseButton1Click:Connect(function()
@@ -3879,19 +3121,11 @@ color1.BackgroundColor3 = ColorpickerFunctions.Color
 color1.BackgroundTransparency = isAlpha and ColorpickerFunctions.Alpha or 0
 colorC.BackgroundColor3 = ColorpickerFunctions.Color
 colorC.BackgroundTransparency = isAlpha and ColorpickerFunctions.Alpha or 0
-if ColorpickerFunctions.Settings.Callback then
-task.spawn(function()
-ColorpickerFunctions.Settings.Callback(ColorpickerFunctions.Color, isAlpha and ColorpickerFunctions.Alpha)
-end)
-end
+if ColorpickerFunctions.Settings.Callback then task.spawn(function() ColorpickerFunctions.Settings.Callback(ColorpickerFunctions.Color, isAlpha and ColorpickerFunctions.Alpha) end) end
 end)
 updateFromSettings()
-function ColorpickerFunctions:UpdateName(New)
-colorpickerName.Text = New
-end
-function ColorpickerFunctions:SetVisibility(State)
-colorpicker.Visible = State
-end
+function ColorpickerFunctions:UpdateName(New) colorpickerName.Text = New end
+function ColorpickerFunctions:SetVisibility(State) colorpicker.Visible = State end
 function ColorpickerFunctions:SetColor(color3)
 ColorpickerFunctions.Color = color3
 colorC.BackgroundColor3 = color3
@@ -3908,20 +3142,10 @@ color1.BackgroundColor3 = ColorpickerFunctions.Color
 colour.BackgroundColor3 = Color3.fromRGB(r,g,b)
 UpdateSlideFromValue(value)
 UpdateRingFromHSV(hue, saturation)
-if ColorpickerFunctions.Settings.Callback then
-task.spawn(function()
-ColorpickerFunctions.Settings.Callback(ColorpickerFunctions.Color, isAlpha and ColorpickerFunctions.Alpha)
-end)
+if ColorpickerFunctions.Settings.Callback then task.spawn(function() ColorpickerFunctions.Settings.Callback(ColorpickerFunctions.Color, isAlpha and ColorpickerFunctions.Alpha) end) end
 end
-end
-function ColorpickerFunctions:SetAlpha(alpha)
-ColorpickerFunctions.Alpha = alpha
-colorC.Transparency = alpha
-updateFromSettings()
-end
-if Flag then
-MacLib.Options[Flag] = ColorpickerFunctions
-end
+function ColorpickerFunctions:SetAlpha(alpha) ColorpickerFunctions.Alpha = alpha colorC.Transparency = alpha updateFromSettings() end
+if Flag then MacLib.Options[Flag] = ColorpickerFunctions end
 return ColorpickerFunctions
 end
 function SectionFunctions:Header(Settings, Flag)
@@ -3942,11 +3166,7 @@ uIPadding.PaddingBottom = UDim.new(0, 5)
 uIPadding.Parent = header
 local headerText = Instance.new("TextLabel")
 headerText.Name = "HeaderText"
-headerText.FontFace = Font.new(
-assets.interFont,
-Enum.FontWeight.Medium,
-Enum.FontStyle.Normal
-)
+headerText.FontFace = Font.new(assets.interFont, Enum.FontWeight.Medium, Enum.FontStyle.Normal)
 headerText.RichText = true
 headerText.Text = HeaderFunctions.Settings.Text or HeaderFunctions.Settings.Name
 headerText.TextColor3 = Color3.fromRGB(255, 255, 255)
@@ -3961,15 +3181,9 @@ headerText.BorderColor3 = Color3.fromRGB(0, 0, 0)
 headerText.BorderSizePixel = 0
 headerText.Size = UDim2.fromScale(1, 0)
 headerText.Parent = header
-function HeaderFunctions:UpdateName(New)
-headerText.Text = New
-end
-function HeaderFunctions:SetVisibility(State)
-header.Visible = State
-end
-if Flag then
-MacLib.Options[Flag] = HeaderFunctions
-end
+function HeaderFunctions:UpdateName(New) headerText.Text = New end
+function HeaderFunctions:SetVisibility(State) header.Visible = State end
+if Flag then MacLib.Options[Flag] = HeaderFunctions end
 return HeaderFunctions
 end
 function SectionFunctions:Label(Settings, Flag)
@@ -4000,15 +3214,9 @@ labelText.BorderColor3 = Color3.fromRGB(0, 0, 0)
 labelText.BorderSizePixel = 0
 labelText.Size = UDim2.fromScale(1, 1)
 labelText.Parent = label
-function LabelFunctions:UpdateName(New)
-labelText.Text = New
-end
-function LabelFunctions:SetVisibility(State)
-label.Visible = State
-end
-if Flag then
-MacLib.Options[Flag] = LabelFunctions
-end
+function LabelFunctions:UpdateName(New) labelText.Text = New end
+function LabelFunctions:SetVisibility(State) label.Visible = State end
+if Flag then MacLib.Options[Flag] = LabelFunctions end
 return LabelFunctions
 end
 function SectionFunctions:SubLabel(Settings, Flag)
@@ -4039,15 +3247,9 @@ subLabelText.BorderColor3 = Color3.fromRGB(0, 0, 0)
 subLabelText.BorderSizePixel = 0
 subLabelText.Size = UDim2.fromScale(1, 1)
 subLabelText.Parent = subLabel
-function SubLabelFunctions:UpdateName(New)
-subLabelText.Text = New
-end
-function SubLabelFunctions:SetVisibility(State)
-subLabel.Visible = State
-end
-if Flag then
-MacLib.Options[Flag] = SubLabelFunctions
-end
+function SubLabelFunctions:UpdateName(New) subLabelText.Text = New end
+function SubLabelFunctions:SetVisibility(State) subLabel.Visible = State end
+if Flag then MacLib.Options[Flag] = SubLabelFunctions end
 return SubLabelFunctions
 end
 function SectionFunctions:Paragraph(Settings, Flag)
@@ -4063,11 +3265,7 @@ paragraph.Size = UDim2.new(1, 0, 0, 38)
 paragraph.Parent = section
 local paragraphHeader = Instance.new("TextLabel")
 paragraphHeader.Name = "ParagraphHeader"
-paragraphHeader.FontFace = Font.new(
-assets.interFont,
-Enum.FontWeight.Medium,
-Enum.FontStyle.Normal
-)
+paragraphHeader.FontFace = Font.new(assets.interFont, Enum.FontWeight.Medium, Enum.FontStyle.Normal)
 paragraphHeader.RichText = true
 paragraphHeader.Text = ParagraphFunctions.Settings.Header
 paragraphHeader.TextColor3 = Color3.fromRGB(255, 255, 255)
@@ -4105,18 +3303,10 @@ paragraphBody.BorderSizePixel = 0
 paragraphBody.LayoutOrder = 1
 paragraphBody.Size = UDim2.fromScale(1, 0)
 paragraphBody.Parent = paragraph
-function ParagraphFunctions:UpdateHeader(New)
-paragraphHeader.Text = New
-end
-function ParagraphFunctions:UpdateBody(New)
-paragraphBody.Text = New
-end
-function ParagraphFunctions:SetVisibility(State)
-paragraph.Visible = State
-end
-if Flag then
-MacLib.Options[Flag] = ParagraphFunctions
-end
+function ParagraphFunctions:UpdateHeader(New) paragraphHeader.Text = New end
+function ParagraphFunctions:UpdateBody(New) paragraphBody.Text = New end
+function ParagraphFunctions:SetVisibility(State) paragraph.Visible = State end
+if Flag then MacLib.Options[Flag] = ParagraphFunctions end
 return ParagraphFunctions
 end
 function SectionFunctions:Divider()
@@ -4149,12 +3339,8 @@ line.BorderColor3 = Color3.fromRGB(0, 0, 0)
 line.BorderSizePixel = 0
 line.Size = UDim2.new(1, 0, 0, 1)
 line.Parent = divider
-function DividerFunctions:Remove()
-divider:Destroy()
-end
-function DividerFunctions:SetVisibility(State)
-divider.Visible = State
-end
+function DividerFunctions:Remove() divider:Destroy() end
+function DividerFunctions:SetVisibility(State) divider.Visible = State end
 return DividerFunctions
 end
 function SectionFunctions:Spacer()
@@ -4168,180 +3354,48 @@ spacer.BorderColor3 = Color3.fromRGB(0, 0, 0)
 spacer.BorderSizePixel = 0
 spacer.Position = UDim2.fromScale(0, 1)
 spacer.Parent = section
-function SpacerFunctions:Remove()
-spacer:Destroy()
-end
-function SpacerFunctions:SetVisibility(State)
-spacer.Visible = State
-end
+function SpacerFunctions:Remove() spacer:Destroy() end
+function SpacerFunctions:SetVisibility(State) spacer.Visible = State end
 return SpacerFunctions
 end
 return SectionFunctions
 end
 local function SelectCurrentTab()
 local easetime = 0.15
-if currentTabInstance then
-currentTabInstance.Parent = nil
-end
+if currentTabInstance then currentTabInstance.Parent = nil end
 for i, tabInfo in pairs(tabs) do
-Tween(i, TweenInfo.new(easetime, Enum.EasingStyle.Sine), {
-BackgroundTransparency = (i == tabSwitcher and 0.98 or 1)
-}):Play()
-if tabInfo.tabStroke then
-Tween(tabInfo.tabStroke, TweenInfo.new(easetime, Enum.EasingStyle.Sine), {
-Transparency = (i == tabSwitcher and 0.95 or 1)
-}):Play()
-end
-if tabInfo.switcherImage then
-Tween(tabInfo.switcherImage, TweenInfo.new(easetime, Enum.EasingStyle.Sine), {
-ImageTransparency = (i == tabSwitcher and 0.1 or 0.5)
-}):Play()
-end
-if tabInfo.switcherName then
-Tween(tabInfo.switcherName, TweenInfo.new(easetime, Enum.EasingStyle.Sine), {
-TextTransparency = (i == tabSwitcher and 0.1 or 0.5)
-}):Play()
-end
-if tabInfo.selector then
-tabInfo.selector.Visible = false
-end
-if tabInfo.closeSelector then
-tabInfo.closeSelector()
-end
+Tween(i, TweenInfo.new(easetime, Enum.EasingStyle.Sine), { BackgroundTransparency = (i == tabSwitcher and 0.98 or 1) }):Play()
+if tabInfo.tabStroke then Tween(tabInfo.tabStroke, TweenInfo.new(easetime, Enum.EasingStyle.Sine), { Transparency = (i == tabSwitcher and 0.95 or 1) }):Play() end
+if tabInfo.switcherImage then Tween(tabInfo.switcherImage, TweenInfo.new(easetime, Enum.EasingStyle.Sine), { ImageTransparency = (i == tabSwitcher and 0.1 or 0.5) }):Play() end
+if tabInfo.switcherName then Tween(tabInfo.switcherName, TweenInfo.new(easetime, Enum.EasingStyle.Sine), { TextTransparency = (i == tabSwitcher and 0.1 or 0.5) }):Play() end
+if tabInfo.selector then tabInfo.selector.Visible = false end
+if tabInfo.closeSelector then tabInfo.closeSelector() end
 end
 tabs[tabSwitcher].tabContent.Parent = content
 currentTabInstance = tabs[tabSwitcher].tabContent
 currentTab.Text = Settings.Name
 currentTab.Visible = (#subtabOrder == 0)
-if subtabSelector then
-subtabSelector.Visible = (#subtabOrder > 0)
+if subtabSelector then subtabSelector.Visible = (#subtabOrder > 0) end
 end
-end
-tabSwitcher.MouseButton1Click:Connect(function()
-SelectCurrentTab()
-end)
-function TabFunctions:Select()
-SelectCurrentTab()
-end
+tabSwitcher.MouseButton1Click:Connect(function() SelectCurrentTab() end)
+function TabFunctions:Select() SelectCurrentTab() end
 function TabFunctions:InsertConfigSection(Side)
 local configSection = TabFunctions:Section({ Side = "Left" })
-if isStudio then
-configSection:Label({Text = "Config system unavailable. (Environment isStudio)"})
-return "Config system unavailable."
-end
+if isStudio then configSection:Label({Text = "Config system unavailable. (Environment isStudio)"}) return "Config system unavailable." end
 local inputPath = nil
 local selectedConfig = nil
-configSection:Input({
-Name = "Config Name",
-Placeholder = "Name",
-AcceptedCharacters = "All",
-Callback = function(input)
-inputPath = input
-end,
-})
-local configSelection = configSection:Dropdown({
-Name = "Select Config",
-Multi = false,
-Required = false,
-Options = MacLib:RefreshConfigList(),
-Callback = function(Value)
-selectedConfig = Value
-end,
-})
-configSection:Button({
-Name = "Create Config",
-Callback = function()
-if not inputPath or string.gsub(inputPath, " ", "") == "" then
-WindowFunctions:Notify({
-Title = "Interface",
-Description = "Config name cannot be empty."
-})
-return
-end
-local success, returned = MacLib:SaveConfig(inputPath)
-if not success then
-WindowFunctions:Notify({
-Title = "Interface",
-Description = "Unable to save config, return error: " .. returned
-})
-end
-WindowFunctions:Notify({
-Title = "Interface",
-Description = string.format("Created config %q", inputPath),
-})
-configSelection:ClearOptions()
-configSelection:InsertOptions(MacLib:RefreshConfigList())
-end,
-})
-configSection:Button({
-Name = "Load Config",
-Callback = function()
-local success, returned = MacLib:LoadConfig(configSelection.Value)
-if not success then
-WindowFunctions:Notify({
-Title = "Interface",
-Description = "Unable to load config, return error: " .. returned
-})
-return
-end
-WindowFunctions:Notify({
-Title = "Interface",
-Description = string.format("Loaded config %q", configSelection.Value),
-})
-end,
-})
-configSection:Button({
-Name = "Overwrite Config",
-Callback = function()
-local success, returned = MacLib:SaveConfig(configSelection.Value)
-if not success then
-WindowFunctions:Notify({
-Title = "Interface",
-Description = "Unable to overwrite config, return error: " .. returned
-})
-end
-WindowFunctions:Notify({
-Title = "Interface",
-Description = string.format("Overwrote config %q", configSelection.Value),
-})
-end,
-})
-configSection:Button({
-Name = "Refresh Config List",
-Callback = function()
-configSelection:ClearOptions()
-configSelection:InsertOptions(MacLib:RefreshConfigList())
-end,
-})
+configSection:Input({ Name = "Config Name", Placeholder = "Name", AcceptedCharacters = "All", Callback = function(input) inputPath = input end, })
+local configSelection = configSection:Dropdown({ Name = "Select Config", Multi = false, Required = false, Options = MacLib:RefreshConfigList(), Callback = function(Value) selectedConfig = Value end, })
+configSection:Button({ Name = "Create Config", Callback = function() if not inputPath or string.gsub(inputPath, " ", "") == "" then WindowFunctions:Notify({ Title = "Interface", Description = "Config name cannot be empty." }) return end local success, returned = MacLib:SaveConfig(inputPath) if not success then WindowFunctions:Notify({ Title = "Interface", Description = "Unable to save config, return error: " .. returned }) end WindowFunctions:Notify({ Title = "Interface", Description = string.format("Created config %q", inputPath), }) configSelection:ClearOptions() configSelection:InsertOptions(MacLib:RefreshConfigList()) end, })
+configSection:Button({ Name = "Load Config", Callback = function() local success, returned = MacLib:LoadConfig(configSelection.Value) if not success then WindowFunctions:Notify({ Title = "Interface", Description = "Unable to load config, return error: " .. returned }) return end WindowFunctions:Notify({ Title = "Interface", Description = string.format("Loaded config %q", configSelection.Value), }) end, })
+configSection:Button({ Name = "Overwrite Config", Callback = function() local success, returned = MacLib:SaveConfig(configSelection.Value) if not success then WindowFunctions:Notify({ Title = "Interface", Description = "Unable to overwrite config, return error: " .. returned }) return end WindowFunctions:Notify({ Title = "Interface", Description = string.format("Overwrote config %q", configSelection.Value), }) end, })
+configSection:Button({ Name = "Refresh Config List", Callback = function() configSelection:ClearOptions() configSelection:InsertOptions(MacLib:RefreshConfigList()) end, })
 local autoloadLabel
-configSection:Button({
-Name = "Set as autoload",
-Callback = function()
-local name = configSelection.Value
-writefile(MacLib.Folder .. "/settings/autoload.txt", name)
-autoloadLabel:UpdateName("Autoload config: " .. name)
-WindowFunctions:Notify({
-Title = "Interface",
-Description = string.format("Set %q as autoload", name),
-})
-end,
-})
+configSection:Button({ Name = "Set as autoload", Callback = function() local name = configSelection.Value writefile(MacLib.Folder .. "/settings/autoload.txt", name) autoloadLabel:UpdateName("Autoload config: " .. name) WindowFunctions:Notify({ Title = "Interface", Description = string.format("Set %q as autoload", name), }) end, })
 autoloadLabel = configSection:Label({Text = "Autoload config: None"})
-if isfile(MacLib.Folder .. "/settings/autoload.txt") then
-local name = readfile(MacLib.Folder .. "/settings/autoload.txt")
-autoloadLabel:UpdateName("Autoload config: " .. name)
+if isfile(MacLib.Folder .. "/settings/autoload.txt") then local name = readfile(MacLib.Folder .. "/settings/autoload.txt") autoloadLabel:UpdateName("Autoload config: " .. name) end
 end
-end
-tabs[tabSwitcher] = {
-tabContent = elements1,
-tabStroke = tabSwitcherUIStroke,
-switcherImage = tabImage,
-switcherName = tabSwitcherName,
-selector = subtabSelector,
-closeSelector = function()
-setSubTabListOpen(false)
-end,
-}
+tabs[tabSwitcher] = { tabContent = elements1, tabStroke = tabSwitcherUIStroke, switcherImage = tabImage, switcherName = tabSwitcherName, selector = subtabSelector, closeSelector = function() setSubTabListOpen(false) end, }
 return TabFunctions
 end
 return SectionFunctions
@@ -4382,11 +3436,7 @@ notificationInformation.BorderSizePixel = 0
 notificationInformation.Size = UDim2.fromScale(1, 1)
 local notificationTitle = Instance.new("TextLabel")
 notificationTitle.Name = "NotificationTitle"
-notificationTitle.FontFace = Font.new(
-assets.interFont,
-Enum.FontWeight.SemiBold,
-Enum.FontStyle.Normal
-)
+notificationTitle.FontFace = Font.new(assets.interFont, Enum.FontWeight.SemiBold, Enum.FontStyle.Normal)
 notificationTitle.RichText = true
 notificationTitle.Text = Settings.Title
 notificationTitle.TextColor3 = Color3.fromRGB(255, 255, 255)
@@ -4408,11 +3458,7 @@ notificationTitleUIPadding.Parent = notificationTitle
 notificationTitle.Parent = notificationInformation
 local notificationDescription = Instance.new("TextLabel")
 notificationDescription.Name = "NotificationDescription"
-notificationDescription.FontFace = Font.new(
-assets.interFont,
-Enum.FontWeight.Medium,
-Enum.FontStyle.Normal
-)
+notificationDescription.FontFace = Font.new(assets.interFont, Enum.FontWeight.Medium, Enum.FontStyle.Normal)
 notificationDescription.Text = Settings.Description
 notificationDescription.TextColor3 = Color3.fromRGB(255, 255, 255)
 notificationDescription.TextSize = 11
@@ -4473,56 +3519,22 @@ uIPadding.PaddingTop = UDim.new(0, 6)
 uIPadding.Parent = notificationControls
 notificationControls.Parent = notification
 local tweens = {
-In = Tween(notificationUIScale, TweenInfo.new(0.2, Enum.EasingStyle.Exponential, Enum.EasingDirection.Out), {
-Scale = Settings.Scale or baseUIScale.Scale
-}),
-Out = Tween(notificationUIScale, TweenInfo.new(0.2, Enum.EasingStyle.Exponential, Enum.EasingDirection.Out), {
-Scale = 0
-}),
+In = Tween(notificationUIScale, TweenInfo.new(0.2, Enum.EasingStyle.Exponential, Enum.EasingDirection.Out), { Scale = Settings.Scale or baseUIScale.Scale }),
+Out = Tween(notificationUIScale, TweenInfo.new(0.2, Enum.EasingStyle.Exponential, Enum.EasingDirection.Out), { Scale = 0 }),
 }
-local styles = {
-None = function() interactable:Destroy() end,
-Confirm = function() interactable.Text = "✓" end,
-Cancel = function() interactable.Text = "✗" end
-}
+local styles = { None = function() interactable:Destroy() end, Confirm = function() interactable.Text = "✓" end, Cancel = function() interactable.Text = "✗" end }
 local style = styles[Settings.Style] or function() interactable:Destroy() end
 style()
-if interactable then
-interactable.MouseButton1Click:Connect(function()
-NotificationFunctions:Cancel()
-if Settings.Callback then
-task.spawn(Settings.Callback)
-end
-end)
-end
+if interactable then interactable.MouseButton1Click:Connect(function() NotificationFunctions:Cancel() if Settings.Callback then task.spawn(Settings.Callback) end end) end
 local AnimateNotification = task.spawn(function()
 tweens.In:Play()
 Settings.Lifetime = Settings.Lifetime or 3
-if Settings.Lifetime ~= 0 then
-task.wait(Settings.Lifetime)
-local out = tweens.Out
-out:Play()
-out.Completed:Wait()
-notification:Destroy()
-end
+if Settings.Lifetime ~= 0 then task.wait(Settings.Lifetime) local out = tweens.Out out:Play() out.Completed:Wait() notification:Destroy() end
 end)
-function NotificationFunctions:UpdateTitle(New)
-notificationTitle.Text = New
-end
-function NotificationFunctions:UpdateDescription(New)
-notificationDescription.Text = New
-end
-function NotificationFunctions:Resize(X)
-local targ = X or 250
-notification.Size = UDim2.fromOffset(targ, 0)
-end
-function NotificationFunctions:Cancel()
-task.cancel(AnimateNotification)
-local out = tweens.Out
-out:Play()
-out.Completed:Wait()
-notification:Destroy()
-end
+function NotificationFunctions:UpdateTitle(New) notificationTitle.Text = New end
+function NotificationFunctions:UpdateDescription(New) notificationDescription.Text = New end
+function NotificationFunctions:Resize(X) local targ = X or 250 notification.Size = UDim2.fromOffset(targ, 0) end
+function NotificationFunctions:Cancel() task.cancel(AnimateNotification) local out = tweens.Out out:Play() out.Completed:Wait() notification:Destroy() end
 return NotificationFunctions
 end
 function WindowFunctions:Dialog(Settings)
@@ -4587,11 +3599,7 @@ paragraph.BorderSizePixel = 0
 paragraph.Size = UDim2.new(1, 0, 0, 38)
 local paragraphHeader = Instance.new("TextLabel")
 paragraphHeader.Name = "ParagraphHeader"
-paragraphHeader.FontFace = Font.new(
-assets.interFont,
-Enum.FontWeight.Medium,
-Enum.FontStyle.Normal
-)
+paragraphHeader.FontFace = Font.new(assets.interFont, Enum.FontWeight.Medium, Enum.FontStyle.Normal)
 paragraphHeader.RichText = true
 paragraphHeader.Text = Settings.Title
 paragraphHeader.TextColor3 = Color3.fromRGB(255, 255, 255)
@@ -4657,20 +3665,8 @@ local canvasIn = Tween(dialogCanvas, TweenInfo.new(0.1, Enum.EasingStyle.Sine), 
 local canvasOut = Tween(dialogCanvas, TweenInfo.new(0.1, Enum.EasingStyle.Sine), { GroupTransparency = 1 })
 local scaleIn = Tween(promptUIScale, TweenInfo.new(0.1, Enum.EasingStyle.Sine), { Scale = 1 })
 local scaleOut = Tween(promptUIScale, TweenInfo.new(0.1, Enum.EasingStyle.Sine), { Scale = 0.95 })
-local function dialogIn()
-canvasIn:Play()
-scaleIn:Play()
-canvasIn.Completed:Wait()
-dialog.Parent = base
-end
-local function dialogOut()
-if not dialog.Parent then return end
-dialog.Parent = dialogCanvas
-canvasOut:Play()
-scaleOut:Play()
-canvasOut.Completed:Wait()
-dialogCanvas:Destroy()
-end
+local function dialogIn() canvasIn:Play() scaleIn:Play() canvasIn.Completed:Wait() dialog.Parent = base end
+local function dialogOut() if not dialog.Parent then return end dialog.Parent = dialogCanvas canvasOut:Play() scaleOut:Play() canvasOut.Completed:Wait() dialogCanvas:Destroy() end
 for _, v in pairs(Settings.Buttons) do
 local button = Instance.new("TextButton")
 button.Name = "Button"
@@ -4698,335 +3694,96 @@ baseUICorner1.Name = "BaseUICorner"
 baseUICorner1.CornerRadius = UDim.new(0, 10)
 baseUICorner1.Parent = button
 button.Parent = interactions
-local TweenSettings = {
-DefaultTransparency = 0,
-DefaultTransparency2 = 0.5,
-HoverTransparency = 0.3,
-HoverTransparency2 = 0.6,
-EasingStyle = Enum.EasingStyle.Sine
-}
+local TweenSettings = { DefaultTransparency = 0, DefaultTransparency2 = 0.5, HoverTransparency = 0.3, HoverTransparency2 = 0.6, EasingStyle = Enum.EasingStyle.Sine }
 local function ChangeState(State)
-if State == "Idle" then
-Tween(button, TweenInfo.new(0.2, TweenSettings.EasingStyle), {
-BackgroundTransparency = TweenSettings.DefaultTransparency,
-TextTransparency = TweenSettings.DefaultTransparency2
-}):Play()
-elseif State == "Hover" then
-Tween(button, TweenInfo.new(0.2, TweenSettings.EasingStyle), {
-BackgroundTransparency = TweenSettings.HoverTransparency,
-TextTransparency = TweenSettings.HoverTransparency2
-}):Play()
+if State == "Idle" then Tween(button, TweenInfo.new(0.2, TweenSettings.EasingStyle), { BackgroundTransparency = TweenSettings.DefaultTransparency, TextTransparency = TweenSettings.DefaultTransparency2 }):Play()
+elseif State == "Hover" then Tween(button, TweenInfo.new(0.2, TweenSettings.EasingStyle), { BackgroundTransparency = TweenSettings.HoverTransparency, TextTransparency = TweenSettings.HoverTransparency2 }):Play() end
 end
-end
-button.MouseButton1Click:Connect(function()
-if dialogCanvas.GroupTransparency ~= 0 then return end
-if v.Callback then
-v.Callback()
-end
-dialogOut()
-end)
-button.MouseEnter:Connect(function()
-ChangeState("Hover")
-end)
-button.MouseLeave:Connect(function()
-ChangeState("Idle")
-end)
+button.MouseButton1Click:Connect(function() if dialogCanvas.GroupTransparency ~= 0 then return end if v.Callback then v.Callback() end dialogOut() end)
+button.MouseEnter:Connect(function() ChangeState("Hover") end)
+button.MouseLeave:Connect(function() ChangeState("Idle") end)
 end
 dialogIn()
-function DialogFunctions:UpdateTitle(New)
-paragraphHeader.Text = New
-end
-function DialogFunctions:UpdateDescription(New)
-paragraphBody.Text = New
-end
-function DialogFunctions:Cancel()
-dialogOut()
-end
+function DialogFunctions:UpdateTitle(New) paragraphHeader.Text = New end
+function DialogFunctions:UpdateDescription(New) paragraphBody.Text = New end
+function DialogFunctions:Cancel() dialogOut() end
 return DialogFunctions
 end
-function WindowFunctions:SetNotificationsState(State)
-notifications.Visible = State
-end
-function WindowFunctions:GetNotificationsState(State)
-return notifications.Visible
-end
-function WindowFunctions:SetState(State)
-windowState = State
-base.Visible = State
-end
-function WindowFunctions:GetState()
-return windowState
-end
+function WindowFunctions:SetNotificationsState(State) notifications.Visible = State end
+function WindowFunctions:GetNotificationsState(State) return notifications.Visible end
+function WindowFunctions:SetState(State) windowState = State base.Visible = State end
+function WindowFunctions:GetState() return windowState end
 local onUnloadCallback
-function WindowFunctions:Unload()
-if onUnloadCallback then
-onUnloadCallback()
-end
-macLib:Destroy()
-unloaded = true
-end
-function WindowFunctions.onUnloaded(callback)
-onUnloadCallback = callback
-end
+function WindowFunctions:Unload() if onUnloadCallback then onUnloadCallback() end macLib:Destroy() unloaded = true end
+function WindowFunctions.onUnloaded(callback) onUnloadCallback = callback end
 local MenuKeybind = Settings.Keybind or Enum.KeyCode.RightControl
 local function ToggleMenu()
 local state = not WindowFunctions:GetState()
 WindowFunctions:SetState(state)
-WindowFunctions:Notify({
-Title = Settings.Title,
-Description = (state and "Maximized " or "Minimized ") .. "the menu. Use " .. tostring(MenuKeybind.Name) .. " to toggle it.",
-Lifetime = 5
-})
+WindowFunctions:Notify({ Title = Settings.Title, Description = (state and "Maximized " or "Minimized ") .. "the menu. Use " .. tostring(MenuKeybind.Name) .. " to toggle it.", Lifetime = 5 })
 end
-UserInputService.InputEnded:Connect(function(inp, gpe)
-if gpe then return end
-if inp.KeyCode == MenuKeybind then
-ToggleMenu()
-end
-end)
+UserInputService.InputEnded:Connect(function(inp, gpe) if gpe then return end if inp.KeyCode == MenuKeybind then ToggleMenu() end end)
 minimize.MouseButton1Click:Connect(ToggleMenu)
-exit.MouseButton1Click:Connect(function()
-WindowFunctions:Dialog({
-Title = Settings.Title,
-Description = "Are you sure you want to exit the menu? You will lose any unsaved configurations.",
-Buttons = {
-{
-Name = "Confirm",
-Callback = function()
-WindowFunctions:Unload()
-end,
-},
-{
-Name = "Cancel"
-}
-}
-})
-end)
-function WindowFunctions:SetKeybind(Keycode)
-MenuKeybind = Keycode
-end
-function WindowFunctions:SetAcrylicBlurState(State)
-acrylicBlur = State
-base.BackgroundTransparency = State and 0.05 or 0
-end
-function WindowFunctions:GetAcrylicBlurState()
-return acrylicBlur
-end
+exit.MouseButton1Click:Connect(function() WindowFunctions:Dialog({ Title = Settings.Title, Description = "Are you sure you want to exit the menu? You will lose any unsaved configurations.", Buttons = { { Name = "Confirm", Callback = function() WindowFunctions:Unload() end, }, { Name = "Cancel" } } }) end)
+function WindowFunctions:SetKeybind(Keycode) MenuKeybind = Keycode end
+function WindowFunctions:SetAcrylicBlurState(State) acrylicBlur = State base.BackgroundTransparency = State and 0.05 or 0 end
+function WindowFunctions:GetAcrylicBlurState() return acrylicBlur end
 local function _SetUserInfoState(State)
-if State then
-headshot.Image = (isReady and headshotImage) or "rbxassetid://0"
-username.Text = "@" .. LocalPlayer.Name
-displayName.Text = LocalPlayer.DisplayName
-else
-headshot.Image = assets.userInfoBlurred
-local nameLength = #LocalPlayer.Name
-local displayNameLength = #LocalPlayer.DisplayName
-username.Text = "@" .. string.rep(".", nameLength)
-displayName.Text = string.rep(".", displayNameLength)
-end
+if State then headshot.Image = (isReady and headshotImage) or "rbxassetid://0" username.Text = "@" .. LocalPlayer.Name displayName.Text = LocalPlayer.DisplayName
+else headshot.Image = assets.userInfoBlurred local nameLength = #LocalPlayer.Name local displayNameLength = #LocalPlayer.DisplayName username.Text = "@" .. string.rep(".", nameLength) displayName.Text = string.rep(".", displayNameLength) end
 end
 local showUserInfo
-if Settings.ShowUserInfo ~= nil then
-showUserInfo = Settings.ShowUserInfo
-else
-showUserInfo = true
-end
+if Settings.ShowUserInfo ~= nil then showUserInfo = Settings.ShowUserInfo else showUserInfo = true end
 _SetUserInfoState(showUserInfo)
-function WindowFunctions:SetUserInfoState(State)
-_SetUserInfoState(State)
-end
-function WindowFunctions:GetUserInfoState(State)
-return showUserInfo
-end
-function WindowFunctions:SetSize(Size)
-base.Size = parseSize(Size, base.Size)
-updateContentWidth()
-end
-function WindowFunctions:GetSize(Size)
-return base.Size
-end
-function WindowFunctions:SetScale(Scale)
-if isMobile then
-baseUIScale.Scale = tonumber(Scale) or baseUIScale.Scale
-end
-end
-function WindowFunctions:GetScale()
-return baseUIScale.Scale
-end
-function WindowFunctions:GetPlatform()
-return isMobile and "Mobile" or "PC"
-end
+function WindowFunctions:SetUserInfoState(State) _SetUserInfoState(State) end
+function WindowFunctions:GetUserInfoState(State) return showUserInfo end
+function WindowFunctions:SetSize(Size) base.Size = parseSize(Size, base.Size) updateContentWidth() end
+function WindowFunctions:GetSize(Size) return base.Size end
+function WindowFunctions:SetScale(Scale) if isMobile then baseUIScale.Scale = tonumber(Scale) or baseUIScale.Scale end end
+function WindowFunctions:GetScale() return baseUIScale.Scale end
+function WindowFunctions:GetPlatform() return isMobile and "Mobile" or "PC" end
 local ClassParser = {
-["Toggle"] = {
-Save = function(Flag, data)
-return {
-type = "Toggle",
-flag = Flag,
-state = data.State or false
-}
-end,
-Load = function(Flag, data)
-if MacLib.Options[Flag] and data.state then
-MacLib.Options[Flag]:UpdateState(data.state)
-end
-end
-},
-["Slider"] = {
-Save = function(Flag, data)
-return {
-type = "Slider",
-flag = Flag,
-value = (data.Value and tostring(data.Value)) or false
-}
-end,
-Load = function(Flag, data)
-if MacLib.Options[Flag] and data.value then
-MacLib.Options[Flag]:UpdateValue(data.value)
-end
-end
-},
-["Input"] = {
-Save = function(Flag, data)
-return {
-type = "Input",
-flag = Flag,
-text = data.Text
-}
-end,
-Load = function(Flag, data)
-if MacLib.Options[Flag] and data.text and type(data.text) == "string" then
-MacLib.Options[Flag]:UpdateText(data.text)
-end
-end
-},
-["Keybind"] = {
-Save = function(Flag, data)
-return {
-type = "Keybind",
-flag = Flag,
-bind = (typeof(data.Bind) == "EnumItem" and data.Bind.Name) or nil
-}
-end,
-Load = function(Flag, data)
-if MacLib.Options[Flag] and data.bind then
-MacLib.Options[Flag]:Bind(Enum.KeyCode[data.bind])
-end
-end
-},
-["Dropdown"] = {
-Save = function(Flag, data)
-return {
-type = "Dropdown",
-flag = Flag,
-value = data.Value
-}
-end,
-Load = function(Flag, data)
-if MacLib.Options[Flag] and data.value then
-MacLib.Options[Flag]:UpdateSelection(data.value)
-end
-end
-},
-["Colorpicker"] = {
-Save = function(Flag, data)
-local function Color3ToHex(color)
-return string.format("#%02X%02X%02X", math.floor(color.R * 255), math.floor(color.G * 255), math.floor(color.B * 255))
-end
-return {
-type = "Colorpicker",
-flag = Flag,
-color = Color3ToHex(data.Color) or nil,
-alpha = data.Alpha
-}
-end,
-Load = function(Flag, data)
-local function HexToColor3(hex)
-local r = tonumber(hex:sub(2, 3), 16) / 255
-local g = tonumber(hex:sub(4, 5), 16) / 255
-local b = tonumber(hex:sub(6, 7), 16) / 255
-return Color3.new(r, g, b)
-end
-if MacLib.Options[Flag] and data.color then
-MacLib.Options[Flag]:SetColor(HexToColor3(data.color))
-if data.alpha then
-MacLib.Options[Flag]:SetAlpha(data.alpha)
-end
-end
-end
-}
+["Toggle"] = { Save = function(Flag, data) return { type = "Toggle", flag = Flag, state = data.State or false } end, Load = function(Flag, data) if MacLib.Options[Flag] and data.state then MacLib.Options[Flag]:UpdateState(data.state) end end },
+["Slider"] = { Save = function(Flag, data) return { type = "Slider", flag = Flag, value = (data.Value and tostring(data.Value)) or false } end, Load = function(Flag, data) if MacLib.Options[Flag] and data.value then MacLib.Options[Flag]:UpdateValue(data.value) end end },
+["Input"] = { Save = function(Flag, data) return { type = "Input", flag = Flag, text = data.Text } end, Load = function(Flag, data) if MacLib.Options[Flag] and data.text and type(data.text) == "string" then MacLib.Options[Flag]:UpdateText(data.text) end end },
+["Keybind"] = { Save = function(Flag, data) return { type = "Keybind", flag = Flag, bind = (typeof(data.Bind) == "EnumItem" and data.Bind.Name) or nil } end, Load = function(Flag, data) if MacLib.Options[Flag] and data.bind then MacLib.Options[Flag]:Bind(Enum.KeyCode[data.bind]) end end },
+["Dropdown"] = { Save = function(Flag, data) return { type = "Dropdown", flag = Flag, value = data.Value } end, Load = function(Flag, data) if MacLib.Options[Flag] and data.value then MacLib.Options[Flag]:UpdateSelection(data.value) end end },
+["Colorpicker"] = { Save = function(Flag, data) local function Color3ToHex(color) return string.format("#%02X%02X%02X", math.floor(color.R * 255), math.floor(color.G * 255), math.floor(color.B * 255)) end return { type = "Colorpicker", flag = Flag, color = Color3ToHex(data.Color) or nil, alpha = data.Alpha } end, Load = function(Flag, data) local function HexToColor3(hex) local r = tonumber(hex:sub(2, 3), 16) / 255 local g = tonumber(hex:sub(4, 5), 16) / 255 local b = tonumber(hex:sub(6, 7), 16) / 255 return Color3.new(r, g, b) end if MacLib.Options[Flag] and data.color then MacLib.Options[Flag]:SetColor(HexToColor3(data.color)) if data.alpha then MacLib.Options[Flag]:SetAlpha(data.alpha) end end end }
 }
 local function BuildFolderTree()
 if isStudio or not (isfolder and makefolder) then return "Config system unavailable." end
-local paths = {
-MacLib.Folder,
-MacLib.Folder .. "/settings"
-}
-for i = 1, #paths do
-local str = paths[i]
-if not isfolder(str) then
-makefolder(str)
-end
-end
+local paths = { MacLib.Folder, MacLib.Folder .. "/settings" }
+for i = 1, #paths do local str = paths[i] if not isfolder(str) then makefolder(str) end end
 end
 function MacLib:LoadAutoLoadConfig()
 if isStudio or not (isfile and readfile) then return "Config system unavailable." end
 if isfile(MacLib.Folder .. "/settings/autoload.txt") then
 local name = readfile(MacLib.Folder .. "/settings/autoload.txt")
 local suc, err = MacLib:LoadConfig(name)
-if not suc then
-WindowFunctions:Notify({
-Title = "Interface",
-Description = "Error loading autoload config: " .. err
-})
-end
-WindowFunctions:Notify({
-Title = "Interface",
-Description = string.format("Autoloaded config: %q", name),
-})
+if not suc then WindowFunctions:Notify({ Title = "Interface", Description = "Error loading autoload config: " .. err }) end
+WindowFunctions:Notify({ Title = "Interface", Description = string.format("Autoloaded config: %q", name), })
 end
 end
-function MacLib:SetFolder(Folder)
-if isStudio then return "Config system unavailable." end
-MacLib.Folder = Folder;
-BuildFolderTree()
-end
+function MacLib:SetFolder(Folder) if isStudio then return "Config system unavailable." end MacLib.Folder = Folder; BuildFolderTree() end
 function MacLib:SaveConfig(Path)
 if isStudio or not writefile then return "Config system unavailable." end
-if (not Path) then
-return false, "Please select a config file."
-end
+if (not Path) then return false, "Please select a config file." end
 local fullPath = MacLib.Folder .. "/settings/" .. Path .. ".json"
-local data = {
-objects = {}
-}
-for flag, option in next, MacLib.Options do
-if not ClassParser[option.Class] then continue end
-if option.IgnoreConfig then continue end
-table.insert(data.objects, ClassParser[option.Class].Save(flag, option))
-end
+local data = { objects = {} }
+for flag, option in next, MacLib.Options do if not ClassParser[option.Class] then continue end if option.IgnoreConfig then continue end table.insert(data.objects, ClassParser[option.Class].Save(flag, option)) end
 local success, encoded = pcall(HttpService.JSONEncode, HttpService, data)
-if not success then
-return false, "Unable to encode into JSON data"
-end
+if not success then return false, "Unable to encode into JSON data" end
 writefile(fullPath, encoded)
 return true
 end
 function MacLib:LoadConfig(Path)
 if isStudio or not (isfile and readfile) then return "Config system unavailable." end
-if (not Path) then
-return false, "Please select a config file."
-end
+if (not Path) then return false, "Please select a config file." end
 local file = MacLib.Folder .. "/settings/" .. Path .. ".json"
 if not isfile(file) then return false, "Invalid file" end
 local success, decoded = pcall(HttpService.JSONDecode, HttpService, readfile(file))
 if not success then return false, "Unable to decode JSON data." end
-for _, option in next, decoded.objects do
-if ClassParser[option.type] then
-task.spawn(function()
-ClassParser[option.type].Load(option.flag, option)
-end)
-end
-end
+for _, option in next, decoded.objects do if ClassParser[option.type] then task.spawn(function() ClassParser[option.type].Load(option.flag, option) end) end end
 return true
 end
 function MacLib:RefreshConfigList()
@@ -5039,231 +3796,54 @@ if file:sub(-5) == ".json" then
 local pos = file:find(".json", 1, true)
 local start = pos
 local char = file:sub(pos, pos)
-while char ~= "/" and char ~= "\\" and char ~= "" do
-pos = pos - 1
-char = file:sub(pos, pos)
-end
-if char == "/" or char == "\\" then
-local name = file:sub(pos + 1, start - 1)
-if name ~= "options" then
-table.insert(out, name)
-end
-end
+while char ~= "/" and char ~= "\\" and char ~= "" do pos = pos - 1 char = file:sub(pos, pos) end
+if char == "/" or char == "\\" then local name = file:sub(pos + 1, start - 1) if name ~= "options" then table.insert(out, name) end end
 end
 end
 return out
 end
 macLib.Enabled = false
 local assetList = {}
-for _, assetId in pairs(assets) do
-table.insert(assetList, assetId)
-end
+for _, assetId in pairs(assets) do table.insert(assetList, assetId) end
 ContentProvider:PreloadAsync(assetList)
 macLib.Enabled = true
 windowState = true
 return WindowFunctions
 end
 function MacLib:Demo()
-local Window = MacLib:Window({
-Title = "Maclib Demo",
-Subtitle = "Lucide icons + subtabs.",
-PCSize = UDim2.fromOffset(868, 650),
-MobileSize = UDim2.fromOffset(600, 450),
-MobileScale = 0.8,
-DragStyle = 1,
-DisabledWindowControls = {},
-ShowUserInfo = true,
-Keybind = Enum.KeyCode.RightControl,
-AcrylicBlur = true,
-})
-local tabGroups = {
-TabGroup1 = Window:TabGroup()
-}
-local tabs = {
-Main = tabGroups.TabGroup1:Tab({ Name = "Demo", Image = "star" }),
-Settings = tabGroups.TabGroup1:Tab({ Name = "Settings", Image = "settings" })
-}
+local Window = MacLib:Window({ Title = "Euphoria", Subtitle = "Rivals", PCSize = UDim2.fromOffset(800, 600), MobileSize = UDim2.fromOffset(600, 450), MobileScale = 0.75, DragStyle = 1, DisabledWindowControls = {}, ShowUserInfo = true, Keybind = Enum.KeyCode.RightControl, AcrylicBlur = true, })
+local tabGroups = { TabGroup1 = Window:TabGroup() }
+local tabs = { Main = tabGroups.TabGroup1:Tab({ Name = "Demo", Image = "star" }), Settings = tabGroups.TabGroup1:Tab({ Name = "Settings", Image = "settings" }) }
 local generalSub = tabs.Main:SubTab({ Name = "General" })
 local extrasSub = tabs.Main:SubTab({ Name = "Extras" })
-local sections = {
-MainSection1 = generalSub:Section({ Side = "Left" }),
-}
-sections.MainSection1:Header({
-Name = "Header #1"
-})
-sections.MainSection1:Button({
-Name = "Button",
-Callback = function()
-Window:Dialog({
-Title = Window.Settings.Title,
-Description = "Lorem ipsum odor amet, consectetuer adipiscing elit. Eros vestibulum aliquet mattis, ex platea nunc.",
-Buttons = {
-{
-Name = "Confirm",
-Callback = function()
-print("Confirmed!")
-end,
-},
-{
-Name = "Cancel"
-}
-}
-})
-end,
-})
-sections.MainSection1:Input({
-Name = "Input",
-Placeholder = "Input",
-AcceptedCharacters = "All",
-Callback = function(input)
-Window:Notify({
-Title = Window.Settings.Title,
-Description = "Successfully set input to " .. input
-})
-end,
-onChanged = function(input)
-print("Input is now " .. input)
-end,
-}, "Input")
-sections.MainSection1:Slider({
-Name = "Slider",
-Default = 50,
-Minimum = 0,
-Maximum = 100,
-DisplayMethod = "Percent",
-Precision = 0,
-Callback = function(Value)
-print("Changed to ".. Value)
-end
-}, "Slider")
-sections.MainSection1:Toggle({
-Name = "Toggle",
-Default = false,
-Callback = function(value)
-Window:Notify({
-Title = Window.Settings.Title,
-Description = (value and "Enabled " or "Disabled ") .. "Toggle"
-})
-end,
-}, "Toggle")
-sections.MainSection1:Keybind({
-Name = "Keybind",
-Blacklist = false,
-Callback = function(binded)
-Window:Notify({
-Title = "Demo Window",
-Description = "Pressed keybind - "..tostring(binded.Name),
-Lifetime = 3
-})
-end,
-onBinded = function(bind)
-Window:Notify({
-Title = "Demo Window",
-Description = "Successfully Binded Keybind to - "..tostring(bind.Name),
-Lifetime = 3
-})
-end,
-}, "Keybind")
-sections.MainSection1:Colorpicker({
-Name = "Colorpicker",
-Default = Color3.fromRGB(0, 255, 255),
-Callback = function(color)
-print("Color: ", color)
-end,
-}, "Colorpicker")
-local alphaColorPicker = sections.MainSection1:Colorpicker({
-Name = "Transparency Colorpicker",
-Default = Color3.fromRGB(255,0,0),
-Alpha = 0,
-Callback = function(color, alpha)
-print("Color: ", color, " Alpha: ", alpha)
-end,
-}, "TransparencyColorpicker")
+local sections = { MainSection1 = generalSub:Section({ Side = "Left" }), }
+sections.MainSection1:Header({ Name = "Header #1" })
+sections.MainSection1:Button({ Name = "Button", Callback = function() Window:Dialog({ Title = Window.Settings.Title, Description = "Lorem ipsum odor amet, consectetuer adipiscing elit. Eros vestibulum aliquet mattis, ex platea nunc.", Buttons = { { Name = "Confirm", Callback = function() print("Confirmed!") end, }, { Name = "Cancel" } } }) end, })
+sections.MainSection1:Input({ Name = "Input", Placeholder = "Input", AcceptedCharacters = "All", Callback = function(input) Window:Notify({ Title = Window.Settings.Title, Description = "Successfully set input to " .. input }) end, onChanged = function(input) print("Input is now " .. input) end, }, "Input")
+sections.MainSection1:Slider({ Name = "Slider", Default = 50, Minimum = 0, Maximum = 100, DisplayMethod = "Percent", Precision = 0, Callback = function(Value) print("Changed to ".. Value) end }, "Slider")
+sections.MainSection1:Toggle({ Name = "Toggle", Default = false, Callback = function(value) Window:Notify({ Title = Window.Settings.Title, Description = (value and "Enabled " or "Disabled ") .. "Toggle" }) end, }, "Toggle")
+sections.MainSection1:Keybind({ Name = "Keybind", Blacklist = false, Callback = function(binded) Window:Notify({ Title = "Demo Window", Description = "Pressed keybind - "..tostring(binded.Name), Lifetime = 3 }) end, onBinded = function(bind) Window:Notify({ Title = "Demo Window", Description = "Successfully Binded Keybind to - "..tostring(bind.Name), Lifetime = 3 }) end, }, "Keybind")
+sections.MainSection1:Colorpicker({ Name = "Colorpicker", Default = Color3.fromRGB(0, 255, 255), Callback = function(color) print("Color: ", color) end, }, "Colorpicker")
+local alphaColorPicker = sections.MainSection1:Colorpicker({ Name = "Transparency Colorpicker", Default = Color3.fromRGB(255,0,0), Alpha = 0, Callback = function(color, alpha) print("Color: ", color, " Alpha: ", alpha) end, }, "TransparencyColorpicker")
 local rainbowActive
 local rainbowConnection
 local hue = 0
-sections.MainSection1:Toggle({
-Name = "Rainbow",
-Default = false,
-Callback = function(value)
-rainbowActive = value
-if rainbowActive then
-rainbowConnection = game:GetService("RunService").RenderStepped:Connect(function(deltaTime)
-hue = (hue + deltaTime * 0.1) % 1
-alphaColorPicker:SetColor(Color3.fromHSV(hue, 1, 1))
-end)
-elseif rainbowConnection then
-rainbowConnection:Disconnect()
-rainbowConnection = nil
-end
-end,
-}, "RainbowToggle")
-local optionTable = {
-"Apple",
-"Banana",
-"Orange",
-"Grapes",
-"Pineapple",
-"Mango",
-"Strawberry",
-"Blueberry",
-"Watermelon",
-"Peach"
-}
-local Dropdown = sections.MainSection1:Dropdown({
-Name = "Dropdown",
-Multi = false,
-Required = true,
-Options = optionTable,
-Default = 1,
-Callback = function(Value)
-print("Dropdown changed: ".. Value)
-end,
-}, "Dropdown")
-local MultiDropdown = sections.MainSection1:Dropdown({
-Name = "Multi Dropdown",
-Search = true,
-Multi = true,
-Required = false,
-Options = optionTable,
-Default = {"Apple", "Orange"},
-Callback = function(Value)
-local Values = {}
-for Value, State in next, Value do
-table.insert(Values, Value)
-end
-print("Mutlidropdown changed:", table.concat(Values, ", "))
-end,
-}, "MultiDropdown")
-sections.MainSection1:Button({
-Name = "Update Selection",
-Callback = function()
-Dropdown:UpdateSelection("Grapes")
-MultiDropdown:UpdateSelection({"Banana", "Pineapple"})
-end,
-})
+sections.MainSection1:Toggle({ Name = "Rainbow", Default = false, Callback = function(value) rainbowActive = value if rainbowActive then rainbowConnection = game:GetService("RunService").RenderStepped:Connect(function(deltaTime) hue = (hue + deltaTime * 0.1) % 1 alphaColorPicker:SetColor(Color3.fromHSV(hue, 1, 1)) end) elseif rainbowConnection then rainbowConnection:Disconnect() rainbowConnection = nil end end, }, "RainbowToggle")
+local optionTable = { "Apple", "Banana", "Orange", "Grapes", "Pineapple", "Mango", "Strawberry", "Blueberry", "Watermelon", "Peach" }
+local Dropdown = sections.MainSection1:Dropdown({ Name = "Dropdown", Multi = false, Required = true, Options = optionTable, Default = 1, Callback = function(Value) print("Dropdown changed: ".. Value) end, }, "Dropdown")
+local MultiDropdown = sections.MainSection1:Dropdown({ Name = "Multi Dropdown", Search = true, Multi = true, Required = false, Options = optionTable, Default = {"Apple", "Orange"}, Callback = function(Value) local Values = {} for Value, State in next, Value do table.insert(Values, Value) end print("Mutlidropdown changed:", table.concat(Values, ", ")) end, }, "MultiDropdown")
+sections.MainSection1:Button({ Name = "Update Selection", Callback = function() Dropdown:UpdateSelection("Grapes") MultiDropdown:UpdateSelection({"Banana", "Pineapple"}) end, })
 sections.MainSection1:Divider()
-sections.MainSection1:Header({
-Text = "Header #2"
-})
-sections.MainSection1:Paragraph({
-Header = "Paragraph",
-Body = "Paragraph body. Lorem ipsum odor amet, consectetuer adipiscing elit. Morbi tempus netus aliquet per velit est gravida."
-})
-sections.MainSection1:Label({
-Text = "Label. Lorem ipsum odor amet, consectetuer adipiscing elit."
-})
-sections.MainSection1:SubLabel({
-Text = "Sub-Label. Lorem ipsum odor amet, consectetuer adipiscing elit."
-})
+sections.MainSection1:Header({ Text = "Header #2" })
+sections.MainSection1:Paragraph({ Header = "Paragraph", Body = "Paragraph body. Lorem ipsum odor amet, consectetuer adipiscing elit. Morbi tempus netus aliquet per velit est gravida." })
+sections.MainSection1:Label({ Text = "Label. Lorem ipsum odor amet, consectetuer adipiscing elit." })
+sections.MainSection1:SubLabel({ Text = "Sub-Label. Lorem ipsum odor amet, consectetuer adipiscing elit." })
 local extrasSection = extrasSub:Section({ Side = "Left" })
 extrasSection:Header({ Name = "Extras Subtab" })
 extrasSection:Label({ Text = "This section lives inside the second subtab." })
 MacLib:SetFolder("Maclib")
 tabs.Settings:InsertConfigSection("Left")
-Window.onUnloaded(function()
-print("Unloaded!")
-end)
+Window.onUnloaded(function() print("Unloaded!") end)
 tabs.Main:Select()
 MacLib:LoadAutoLoadConfig()
 end
