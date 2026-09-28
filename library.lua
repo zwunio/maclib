@@ -1191,7 +1191,7 @@ rightUIListLayout.SortOrder = Enum.SortOrder.LayoutOrder
 rightUIListLayout.Parent = right
 right.Parent = elementsScrolling
 elementsScrolling.Parent = elements1
---// Subtab system (inline expanding dropdown inside the topbar)
+--// Subtab system (inline expanding dropdown, aligned to the left column)
 local subtabs = {}
 local subtabOrder = {}
 local currentSubTab = nil
@@ -1206,6 +1206,9 @@ page.Parent = elements1
 page.Visible = false
 return page, page:WaitForChild("Left"), page:WaitForChild("Right")
 end
+local SUBTAB_X = 31
+local SUBTAB_WIDTH_SCALE = 0.5
+local SUBTAB_WIDTH_OFFSET = -57
 local subtabSelector = Instance.new("Frame")
 subtabSelector.Name = "SubtabSelector"
 subtabSelector.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
@@ -1213,11 +1216,11 @@ subtabSelector.BackgroundTransparency = 0.985
 subtabSelector.BorderColor3 = Color3.fromRGB(0, 0, 0)
 subtabSelector.BorderSizePixel = 0
 subtabSelector.AnchorPoint = Vector2.new(0, 0)
-subtabSelector.Position = UDim2.new(0, 0, 0, CHIP_TOP)
-subtabSelector.Size = UDim2.fromOffset(240, CHIP_HEIGHT)
+subtabSelector.Position = UDim2.new(0, SUBTAB_X, 0, CHIP_TOP)
+subtabSelector.Size = UDim2.new(SUBTAB_WIDTH_SCALE, SUBTAB_WIDTH_OFFSET, 0, CHIP_HEIGHT)
 subtabSelector.ClipsDescendants = true
 subtabSelector.Visible = false
-subtabSelector.Parent = elements
+subtabSelector.Parent = topbar
 local subtabSelectorCorner = Instance.new("UICorner")
 subtabSelectorCorner.Name = "SubtabSelectorCorner"
 subtabSelectorCorner.CornerRadius = UDim.new(0, 6)
@@ -1325,7 +1328,7 @@ if state == listOpen then return end
 listDb = true
 listOpen = state
 local extra = state and getListHeight() or 0
-Tween(subtabSelector, EXPAND_INFO, {Size = UDim2.fromOffset(240, CHIP_HEIGHT + extra)}):Play()
+Tween(subtabSelector, EXPAND_INFO, {Size = UDim2.new(SUBTAB_WIDTH_SCALE, SUBTAB_WIDTH_OFFSET, 0, CHIP_HEIGHT + extra)}):Play()
 Tween(subtabArrow, TweenInfo.new(0.2, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {Rotation = state and -90 or 0}):Play()
 setTopbarHeight(TOPBAR_CLOSED + extra)
 if state then
