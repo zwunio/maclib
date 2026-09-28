@@ -312,7 +312,7 @@ information.BackgroundTransparency = 1
 information.BorderColor3 = Color3.fromRGB(0, 0, 0)
 information.BorderSizePixel = 0
 information.Position = UDim2.fromOffset(0, 0)
-information.Size = UDim2.new(1, 0, 0, 63)
+information.Size = UDim2.new(1, 0, 0, 75)
 local divider2 = Instance.new("Frame")
 divider2.Name = "Divider"
 divider2.AnchorPoint = Vector2.new(0, 1)
@@ -354,7 +354,7 @@ Enum.FontStyle.Normal
 title.Text = Settings.Title
 title.TextColor3 = Color3.fromRGB(255, 255, 255)
 title.RichText = true
-title.TextSize = 18
+title.TextSize = 20
 title.TextTransparency = 0.1
 title.TextTruncate = Enum.TextTruncate.SplitWord
 title.TextXAlignment = Enum.TextXAlignment.Left
@@ -376,7 +376,7 @@ Enum.FontStyle.Normal
 subtitle.RichText = true
 subtitle.Text = Settings.Subtitle
 subtitle.TextColor3 = Color3.fromRGB(255, 255, 255)
-subtitle.TextSize = 12
+subtitle.TextSize = 13
 subtitle.TextTransparency = 0.7
 subtitle.TextTruncate = Enum.TextTruncate.SplitWord
 subtitle.TextXAlignment = Enum.TextXAlignment.Left
@@ -404,8 +404,8 @@ sidebarGroup.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
 sidebarGroup.BackgroundTransparency = 1
 sidebarGroup.BorderColor3 = Color3.fromRGB(0, 0, 0)
 sidebarGroup.BorderSizePixel = 0
-sidebarGroup.Position = UDim2.fromOffset(0, 63)
-sidebarGroup.Size = UDim2.new(1, 0, 1, -63)
+sidebarGroup.Position = UDim2.fromOffset(0, 75)
+sidebarGroup.Size = UDim2.new(1, 0, 1, -75)
 local userInfo = Instance.new("Frame")
 userInfo.Name = "UserInfo"
 userInfo.AnchorPoint = Vector2.new(0, 1)
@@ -639,7 +639,7 @@ topbar.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
 topbar.BackgroundTransparency = 1
 topbar.BorderColor3 = Color3.fromRGB(0, 0, 0)
 topbar.BorderSizePixel = 0
-topbar.Size = UDim2.new(1, 0, 0, 63)
+topbar.Size = UDim2.new(1, 0, 0, 75)
 local divider4 = Instance.new("Frame")
 divider4.Name = "Divider"
 divider4.AnchorPoint = Vector2.new(0, 1)
@@ -777,13 +777,13 @@ currentTab.TextTransparency = 0.5
 currentTab.TextTruncate = Enum.TextTruncate.SplitWord
 currentTab.TextXAlignment = Enum.TextXAlignment.Left
 currentTab.TextYAlignment = Enum.TextYAlignment.Top
-currentTab.AnchorPoint = Vector2.new(0, 0)
+currentTab.AnchorPoint = Vector2.new(0, 0.5)
 currentTab.AutomaticSize = Enum.AutomaticSize.Y
 currentTab.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
 currentTab.BackgroundTransparency = 1
 currentTab.BorderColor3 = Color3.fromRGB(0, 0, 0)
 currentTab.BorderSizePixel = 0
-currentTab.Position = UDim2.new(0, 0, 0, 22)
+currentTab.Position = UDim2.new(0, 0, 0.5, 0)
 currentTab.Size = UDim2.new(0.9, 0, 0, 0)
 currentTab.Parent = elements
 elements.Parent = topbar
@@ -997,6 +997,10 @@ function WindowFunctions:GlobalSetting(Settings)
 return {UpdateName = function() end, UpdateState = function() end}
 end
 function WindowFunctions:TabGroup()
+local TOPBAR_CLOSED = 75
+local CHIP_HEIGHT = 38
+local CHIP_TOP = 18
+local EXPAND_INFO = TweenInfo.new(0.2, Enum.EasingStyle.Exponential, Enum.EasingDirection.Out)
 local SectionFunctions = {}
 local tabGroup = Instance.new("Frame")
 tabGroup.Name = "Section"
@@ -1119,8 +1123,8 @@ elements1.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
 elements1.BackgroundTransparency = 1
 elements1.BorderColor3 = Color3.fromRGB(0, 0, 0)
 elements1.BorderSizePixel = 0
-elements1.Position = UDim2.fromOffset(0, 63)
-elements1.Size = UDim2.new(1, 0, 1, -63)
+elements1.Position = UDim2.fromOffset(0, TOPBAR_CLOSED)
+elements1.Size = UDim2.new(1, 0, 1, -TOPBAR_CLOSED)
 elements1.ClipsDescendants = true
 local elementsUIPadding = Instance.new("UIPadding")
 elementsUIPadding.Name = "ElementsUIPadding"
@@ -1202,10 +1206,6 @@ page.Parent = elements1
 page.Visible = false
 return page, page:WaitForChild("Left"), page:WaitForChild("Right")
 end
-local TOPBAR_CLOSED = 63
-local CHIP_HEIGHT = 34
-local CHIP_TOP = 14
-local EXPAND_INFO = TweenInfo.new(0.2, Enum.EasingStyle.Exponential, Enum.EasingDirection.Out)
 local subtabSelector = Instance.new("Frame")
 subtabSelector.Name = "SubtabSelector"
 subtabSelector.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
@@ -1214,7 +1214,7 @@ subtabSelector.BorderColor3 = Color3.fromRGB(0, 0, 0)
 subtabSelector.BorderSizePixel = 0
 subtabSelector.AnchorPoint = Vector2.new(0, 0)
 subtabSelector.Position = UDim2.new(0, 0, 0, CHIP_TOP)
-subtabSelector.Size = UDim2.fromOffset(200, CHIP_HEIGHT)
+subtabSelector.Size = UDim2.fromOffset(240, CHIP_HEIGHT)
 subtabSelector.ClipsDescendants = true
 subtabSelector.Visible = false
 subtabSelector.Parent = elements
@@ -1270,7 +1270,7 @@ subtabArrow.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
 subtabArrow.BackgroundTransparency = 1
 subtabArrow.BorderColor3 = Color3.fromRGB(0, 0, 0)
 subtabArrow.BorderSizePixel = 0
-subtabArrow.Position = UDim2.new(1, 0, 0, 10)
+subtabArrow.Position = UDim2.new(1, 0, 0, 12)
 subtabArrow.Size = UDim2.fromOffset(14, 14)
 subtabArrow.Parent = subtabButton
 local subtabList = Instance.new("ScrollingFrame")
@@ -1313,7 +1313,7 @@ local function getListHeight()
 local count = #subtabOrder
 if count == 0 then return 0 end
 local rows = math.min(count, MAX_LIST_ROWS)
-return 10 + (rows * 30) + math.max(0, (rows - 1) * 5)
+return 10 + (rows * 34) + math.max(0, (rows - 1) * 5)
 end
 local function setTopbarHeight(h)
 Tween(topbar, EXPAND_INFO, {Size = UDim2.new(1, 0, 0, h)}):Play()
@@ -1325,7 +1325,7 @@ if state == listOpen then return end
 listDb = true
 listOpen = state
 local extra = state and getListHeight() or 0
-Tween(subtabSelector, EXPAND_INFO, {Size = UDim2.fromOffset(200, CHIP_HEIGHT + extra)}):Play()
+Tween(subtabSelector, EXPAND_INFO, {Size = UDim2.fromOffset(240, CHIP_HEIGHT + extra)}):Play()
 Tween(subtabArrow, TweenInfo.new(0.2, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {Rotation = state and -90 or 0}):Play()
 setTopbarHeight(TOPBAR_CLOSED + extra)
 if state then
@@ -1387,7 +1387,7 @@ option.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
 option.BackgroundTransparency = 1
 option.BorderColor3 = Color3.fromRGB(0, 0, 0)
 option.BorderSizePixel = 0
-option.Size = UDim2.new(1, 0, 0, 30)
+option.Size = UDim2.new(1, 0, 0, 34)
 option.LayoutOrder = #subtabOrder
 option.Parent = subtabList
 local optionUIPadding = Instance.new("UIPadding")
@@ -1455,8 +1455,6 @@ nameOut = Tween(optionName, TweenInfo.new(subtabTweensettings.duration, subtabTw
 TextTransparency = subtabTweensettings.transparencyOut
 }),
 }
-option.MouseEnter:Connect(function() if currentSubTab ~= name then Tween(option, TweenInfo.new(0.15, Enum.EasingStyle.Sine), { BackgroundTransparency = 0.95 }):Play() end end)
-option.MouseLeave:Connect(function() Tween(option, TweenInfo.new(0.15, Enum.EasingStyle.Sine), { BackgroundTransparency = 1 }):Play() end)
 option.MouseButton1Click:Connect(function() selectSubTab(name) end)
 if #subtabOrder == 1 then selectSubTab(name) if currentTabInstance == elements1 then currentTab.Visible = false subtabSelector.Visible = true end end
 end
@@ -1804,7 +1802,7 @@ sliderBar.BackgroundColor3 = Color3.fromRGB(87, 86, 86)
 sliderBar.BackgroundTransparency = 0
 sliderBar.BorderColor3 = Color3.fromRGB(0, 0, 0)
 sliderBar.BorderSizePixel = 0
-sliderBar.ClipsDescendants = true
+sliderBar.ClipsDescendants = false
 sliderBar.Position = UDim2.fromScale(0.219, 0.457)
 sliderBar.Size = UDim2.fromOffset(123, 3)
 local sliderBarCorner = Instance.new("UICorner")
