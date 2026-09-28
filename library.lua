@@ -28,8 +28,6 @@ interFont = "rbxassetid://12187365364",
 userInfoBlurred = "rbxassetid://18824089198",
 buttonImage = "rbxassetid://10709791437",
 searchIcon = "rbxassetid://86737463322606",
-colorWheel = "rbxassetid://2849458409",
-colorTarget = "rbxassetid://73265255323268",
 grid = "rbxassetid://121484455191370",
 transform = "rbxassetid://90336395745819",
 dropdown = "rbxassetid://18865373378",
@@ -1191,7 +1189,7 @@ rightUIListLayout.SortOrder = Enum.SortOrder.LayoutOrder
 rightUIListLayout.Parent = right
 right.Parent = elementsScrolling
 elementsScrolling.Parent = elements1
---// Subtab system (inline expanding dropdown, aligned to the left column)
+--// Subtab system (inline expanding dropdown inside the topbar)
 local subtabs = {}
 local subtabOrder = {}
 local currentSubTab = nil
@@ -2797,8 +2795,8 @@ end
 function SectionFunctions:Colorpicker(Settings, Flag)
 local ColorpickerFunctions = { Settings = Settings, IgnoreConfig = false, Class = "Colorpicker" }
 local isAlpha = ColorpickerFunctions.Settings.Alpha and true or false
-ColorpickerFunctions.Color = ColorpickerFunctions.Settings.Default
-ColorpickerFunctions.Alpha = isAlpha and ColorpickerFunctions.Settings.Alpha
+ColorpickerFunctions.Color = ColorpickerFunctions.Settings.Default or Color3.fromRGB(255, 255, 255)
+ColorpickerFunctions.Alpha = isAlpha and (ColorpickerFunctions.Settings.Alpha or 0) or 0
 local colorpicker = Instance.new("Frame")
 colorpicker.Name = "Colorpicker"
 colorpicker.AutomaticSize = Enum.AutomaticSize.Y
@@ -2920,100 +2918,74 @@ colorOptions.BorderColor3 = Color3.fromRGB(0, 0, 0)
 colorOptions.BorderSizePixel = 0
 colorOptions.LayoutOrder = 1
 colorOptions.Size = UDim2.fromScale(1, 0)
-local value = Instance.new("TextButton")
-value.Name = "Value"
-value.FontFace = Font.new("rbxasset://fonts/families/SourceSansPro.json")
-value.Text = ""
-value.TextColor3 = Color3.fromRGB(0, 0, 0)
-value.TextSize = 14
-value.AutoButtonColor = false
-value.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
-value.BorderColor3 = Color3.fromRGB(0, 0, 0)
-value.BorderSizePixel = 0
-value.LayoutOrder = 1
-value.Position = UDim2.fromScale(0.092, 0.886)
-value.Size = UDim2.new(1, 0, 0, 15)
-local uIGradient = Instance.new("UIGradient")
-uIGradient.Name = "UIGradient"
-uIGradient.Color = ColorSequence.new({
-ColorSequenceKeypoint.new(0, Color3.fromRGB(255, 255, 255)),
-ColorSequenceKeypoint.new(1, Color3.fromRGB(0, 0, 0)),
-})
-uIGradient.Parent = value
-local slide = Instance.new("Frame")
-slide.Name = "Slide"
-slide.AnchorPoint = Vector2.new(0, 0.5)
-slide.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
-slide.BorderColor3 = Color3.fromRGB(27, 42, 53)
-slide.BorderSizePixel = 0
-slide.Position = UDim2.fromScale(0, 0.5)
-slide.Size = UDim2.new(0, 13, 1, 8)
-local uICorner = Instance.new("UICorner")
-uICorner.Name = "UICorner"
-uICorner.CornerRadius = UDim.new(1, 0)
-uICorner.Parent = slide
-local uIStroke = Instance.new("UIStroke")
-uIStroke.Name = "UIStroke"
-uIStroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
-uIStroke.Transparency = 0.5
-uIStroke.Parent = slide
-slide.Parent = value
-local uICorner1 = Instance.new("UICorner")
-uICorner1.Name = "UICorner"
-uICorner1.CornerRadius = UDim.new(0, 6)
-uICorner1.Parent = value
-local uIStroke1 = Instance.new("UIStroke")
-uIStroke1.Name = "UIStroke"
-uIStroke1.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
-uIStroke1.Color = Color3.fromRGB(255, 255, 255)
-uIStroke1.Transparency = 0.9
-local uIGradient1 = Instance.new("UIGradient")
-uIGradient1.Name = "UIGradient"
-uIGradient1.Color = ColorSequence.new({
-ColorSequenceKeypoint.new(0, Color3.fromRGB(255, 255, 255)),
-ColorSequenceKeypoint.new(1, Color3.fromRGB(0, 0, 0)),
-})
-uIGradient1.Rotation = 180
-uIGradient1.Parent = uIStroke1
-uIStroke1.Parent = value
-value.Parent = colorOptions
-local uIListLayout1 = Instance.new("UIListLayout")
-uIListLayout1.Name = "UIListLayout"
-uIListLayout1.Padding = UDim.new(0, 25)
-uIListLayout1.SortOrder = Enum.SortOrder.LayoutOrder
-uIListLayout1.Parent = colorOptions
+--// SV pad row (procedural palette, no image assets)
 local wheel = Instance.new("Frame")
 wheel.Name = "Wheel"
 wheel.AutomaticSize = Enum.AutomaticSize.Y
-wheel.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+wheel.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
 wheel.BackgroundTransparency = 1
 wheel.BorderColor3 = Color3.fromRGB(0, 0, 0)
 wheel.BorderSizePixel = 0
-wheel.Size = UDim2.new(1, 0, 0, 100)
-local wheel1 = Instance.new("ImageButton")
-wheel1.Name = "Wheel"
-wheel1.Image = assets.colorWheel
-wheel1.AutoButtonColor = false
-wheel1.Active = false
-wheel1.BackgroundColor3 = Color3.fromRGB(248, 248, 248)
-wheel1.BackgroundTransparency = 1
-wheel1.BorderColor3 = Color3.fromRGB(27, 42, 53)
-wheel1.Selectable = false
-wheel1.Size = UDim2.fromOffset(220, 220)
-wheel1.SizeConstraint = Enum.SizeConstraint.RelativeYY
-local target = Instance.new("ImageLabel")
-target.Name = "Target"
-target.Image = assets.colorTarget
-target.ImageColor3 = Color3.fromRGB(0, 0, 0)
-target.AnchorPoint = Vector2.new(0.5, 0.5)
-target.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
-target.BackgroundTransparency = 1
-target.BorderColor3 = Color3.fromRGB(27, 42, 53)
-target.Position = UDim2.fromScale(0.5, 0.5)
-target.Size = UDim2.fromOffset(22, 22)
-target.SizeConstraint = Enum.SizeConstraint.RelativeYY
-target.Parent = wheel1
-wheel1.Parent = wheel
+wheel.Size = UDim2.new(1, 0, 0, 200)
+local svPad = Instance.new("Frame")
+svPad.Name = "SVPad"
+svPad.AnchorPoint = Vector2.new(0, 0.5)
+svPad.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+svPad.BorderColor3 = Color3.fromRGB(0, 0, 0)
+svPad.BorderSizePixel = 0
+svPad.ClipsDescendants = true
+svPad.Position = UDim2.new(0, 0, 0.5, 0)
+svPad.Size = UDim2.fromOffset(200, 200)
+local svPadCorner = Instance.new("UICorner")
+svPadCorner.Name = "SVPadCorner"
+svPadCorner.CornerRadius = UDim.new(0, 6)
+svPadCorner.Parent = svPad
+local padHue = Instance.new("Frame")
+padHue.Name = "PadHue"
+padHue.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+padHue.BorderColor3 = Color3.fromRGB(0, 0, 0)
+padHue.BorderSizePixel = 0
+padHue.Size = UDim2.fromScale(1, 1)
+local padHueGradient = Instance.new("UIGradient")
+padHueGradient.Color = ColorSequence.new(Color3.fromRGB(255, 255, 255), Color3.fromRGB(255, 0, 0))
+padHueGradient.Parent = padHue
+padHue.Parent = svPad
+local padDark = Instance.new("Frame")
+padDark.Name = "PadDark"
+padDark.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+padDark.BorderColor3 = Color3.fromRGB(0, 0, 0)
+padDark.BorderSizePixel = 0
+padDark.Size = UDim2.fromScale(1, 1)
+local padDarkGradient = Instance.new("UIGradient")
+padDarkGradient.Rotation = 90
+padDarkGradient.Transparency = NumberSequence.new({
+NumberSequenceKeypoint.new(0, 1),
+NumberSequenceKeypoint.new(1, 0),
+})
+padDarkGradient.Parent = padDark
+padDark.Parent = svPad
+local padHandle = Instance.new("Frame")
+padHandle.Name = "PadHandle"
+padHandle.AnchorPoint = Vector2.new(0.5, 0.5)
+padHandle.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+padHandle.BorderColor3 = Color3.fromRGB(0, 0, 0)
+padHandle.BorderSizePixel = 0
+padHandle.Position = UDim2.new(1, 0, 0, 0)
+padHandle.Size = UDim2.fromOffset(14, 14)
+padHandle.ZIndex = 3
+local padHandleCorner = Instance.new("UICorner")
+padHandleCorner.Name = "PadHandleCorner"
+padHandleCorner.CornerRadius = UDim.new(1, 0)
+padHandleCorner.Parent = padHandle
+local padHandleStroke = Instance.new("UIStroke")
+padHandleStroke.Name = "PadHandleStroke"
+padHandleStroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
+padHandleStroke.Color = Color3.fromRGB(0, 0, 0)
+padHandleStroke.Thickness = 2
+padHandleStroke.Transparency = 0.35
+padHandleStroke.Parent = padHandle
+padHandle.Parent = svPad
+svPad.Parent = wheel
 local inputs = Instance.new("Frame")
 inputs.Name = "Inputs"
 inputs.AnchorPoint = Vector2.new(1, 0.5)
@@ -3114,6 +3086,62 @@ uIPadding.Name = "UIPadding"
 uIPadding.PaddingRight = UDim.new(0, 5)
 uIPadding.Parent = wheel
 wheel.Parent = colorOptions
+--// Hue bar (repurposed slider row)
+local hueBar = Instance.new("TextButton")
+hueBar.Name = "HueBar"
+hueBar.FontFace = Font.new("rbxasset://fonts/families/SourceSansPro.json")
+hueBar.Text = ""
+hueBar.AutoButtonColor = false
+hueBar.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+hueBar.BorderColor3 = Color3.fromRGB(0, 0, 0)
+hueBar.BorderSizePixel = 0
+hueBar.LayoutOrder = 1
+hueBar.Size = UDim2.new(1, 0, 0, 15)
+local hueBarCorner = Instance.new("UICorner")
+hueBarCorner.Name = "HueBarCorner"
+hueBarCorner.CornerRadius = UDim.new(0, 6)
+hueBarCorner.Parent = hueBar
+local hueBarStroke = Instance.new("UIStroke")
+hueBarStroke.Name = "HueBarStroke"
+hueBarStroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
+hueBarStroke.Color = Color3.fromRGB(255, 255, 255)
+hueBarStroke.Transparency = 0.9
+hueBarStroke.Parent = hueBar
+local hueGradient = Instance.new("UIGradient")
+hueGradient.Name = "HueGradient"
+hueGradient.Color = ColorSequence.new({
+ColorSequenceKeypoint.new(0, Color3.fromRGB(255, 0, 0)),
+ColorSequenceKeypoint.new(0.17, Color3.fromRGB(255, 255, 0)),
+ColorSequenceKeypoint.new(0.33, Color3.fromRGB(0, 255, 0)),
+ColorSequenceKeypoint.new(0.5, Color3.fromRGB(0, 255, 255)),
+ColorSequenceKeypoint.new(0.67, Color3.fromRGB(0, 0, 255)),
+ColorSequenceKeypoint.new(0.83, Color3.fromRGB(255, 0, 255)),
+ColorSequenceKeypoint.new(1, Color3.fromRGB(255, 0, 0)),
+})
+hueGradient.Parent = hueBar
+local hueSlide = Instance.new("Frame")
+hueSlide.Name = "HueSlide"
+hueSlide.AnchorPoint = Vector2.new(0.5, 0.5)
+hueSlide.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+hueSlide.BorderColor3 = Color3.fromRGB(0, 0, 0)
+hueSlide.BorderSizePixel = 0
+hueSlide.Position = UDim2.new(0, 0, 0.5, 0)
+hueSlide.Size = UDim2.new(0, 10, 1, 7)
+hueSlide.ZIndex = 2
+local hueSlideCorner = Instance.new("UICorner")
+hueSlideCorner.Name = "HueSlideCorner"
+hueSlideCorner.CornerRadius = UDim.new(1, 0)
+hueSlideCorner.Parent = hueSlide
+local hueSlideStroke = Instance.new("UIStroke")
+hueSlideStroke.Name = "HueSlideStroke"
+hueSlideStroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
+hueSlideStroke.Color = Color3.fromRGB(0, 0, 0)
+hueSlideStroke.Thickness = 2
+hueSlideStroke.Transparency = 0.4
+hueSlideStroke.Parent = hueSlide
+hueSlide.Parent = hueBar
+hueBar.Parent = colorOptions
+--// Wells
 local colorWells = Instance.new("Frame")
 colorWells.Name = "ColorWells"
 colorWells.AutomaticSize = Enum.AutomaticSize.Y
@@ -3319,10 +3347,11 @@ line.Parent = paragraph
 paragraph.Parent = prompt
 prompt.Parent = colorPicker
 colorPicker.Parent = base
-local fromHSV, fromRGB, v2, udim2 = Color3.fromHSV, Color3.fromRGB, Vector2.new, UDim2.new
-local wheel = wheel1
-local ring = target
-local slider = value
+--// Colorpicker logic (HSV: hue bar + SV pad)
+local fromHSV = Color3.fromHSV
+local Mouse = LocalPlayer:GetMouse()
+local hue, saturation, value = 0, 0, 1
+local PadDown, HueDown = false, false
 local colour = color
 local modifierInputs = {
 Hex = hexBox,
@@ -3331,18 +3360,8 @@ Green = greenBox,
 Blue = blueBox,
 Alpha = alphaBox,
 }
-local Mouse = LocalPlayer:GetMouse()
-local WheelDown, SlideDown = false, false
-local hue, saturation, value = 0, 0, 1
-local function toPolar(v)
-return math.atan2(v.y, v.x), v.magnitude
-end
-local function radToDeg(x)
-return ((x + math.pi) / (2 * math.pi)) * 360
-end
-local function degToRad(degrees)
-return degrees * (math.pi / 180)
-end
+local function clamp01(n) return math.clamp(n, 0, 1) end
+local function clampInput(v, min, max) local n = tonumber(v) if n then return math.clamp(n, min, max) end return min end
 local function hexToRGB(hex)
 hex = hex:gsub("#","")
 if #hex ~= 6 then return 0, 0, 0 end
@@ -3351,59 +3370,66 @@ local g = tonumber(hex:sub(3, 4), 16) or 0
 local b = tonumber(hex:sub(5, 6), 16) or 0
 return r, g, b
 end
-local function clampInput(value, min, max)
-local num = tonumber(value)
-if num then
-return math.clamp(num, min, max)
-end
-return min
-end
 local function update()
 local c = fromHSV(hue, saturation, value)
 colour.BackgroundColor3 = c
 colour.BackgroundTransparency = clampInput(modifierInputs.Alpha.Text, 0, 1)
-modifierInputs.Red.Text = tostring(math.floor(c.r * 255 + 0.5))
-modifierInputs.Green.Text = tostring(math.floor(c.g * 255 + 0.5))
-modifierInputs.Blue.Text = tostring(math.floor(c.b * 255 + 0.5))
+modifierInputs.Red.Text = tostring(math.floor(c.R * 255 + 0.5))
+modifierInputs.Green.Text = tostring(math.floor(c.G * 255 + 0.5))
+modifierInputs.Blue.Text = tostring(math.floor(c.B * 255 + 0.5))
 modifierInputs.Alpha.Text = clampInput(modifierInputs.Alpha.Text, 0, 1)
-local hexColor = string.format("#%02X%02X%02X",
-math.floor(c.r * 255 + 0.5),
-math.floor(c.g * 255 + 0.5),
-math.floor(c.b * 255 + 0.5))
-modifierInputs.Hex.Text = hexColor
+modifierInputs.Hex.Text = string.format("#%02X%02X%02X",
+math.floor(c.R * 255 + 0.5),
+math.floor(c.G * 255 + 0.5),
+math.floor(c.B * 255 + 0.5))
+padHueGradient.Color = ColorSequence.new(Color3.fromRGB(255, 255, 255), fromHSV(hue, 1, 1))
 end
-local function UpdateSlide(iX)
-local rY = iX - slider.AbsolutePosition.X
-local cY = math.clamp(rY, 0, slider.AbsoluteSize.X - slide.AbsoluteSize.X)
-slide.Position = udim2(0, cY, 0.5, 0)
-value = 1 - (cY / (slider.AbsoluteSize.X - slide.AbsoluteSize.X))
+local function setHandles()
+padHandle.Position = UDim2.new(saturation, 0, 1 - value, 0)
+hueSlide.Position = UDim2.new(hue, 0, 0.5, 0)
+end
+local function UpdatePad(px, py)
+saturation = clamp01((px - svPad.AbsolutePosition.X) / math.max(svPad.AbsoluteSize.X, 1))
+value = 1 - clamp01((py - svPad.AbsolutePosition.Y) / math.max(svPad.AbsoluteSize.Y, 1))
+setHandles()
 update()
 end
-local function UpdateRing(iX, iY)
-local r = wheel.AbsoluteSize.x / 2
-local d = v2(iX, iY) - wheel.AbsolutePosition - wheel.AbsoluteSize / 2
-if d:Dot(d) > r * r then
-d = d.unit * r
-end
-ring.Position = udim2(0.5, d.x, 0.5, d.y)
-local phi, len = toPolar(d * v2(1, -1))
-hue, saturation = radToDeg(phi) / 360, math.clamp(len / r, 0, 1)
-slider.BackgroundColor3 = fromHSV(hue, saturation, 1)
+local function UpdateHue(px)
+hue = clamp01((px - hueBar.AbsolutePosition.X) / math.max(hueBar.AbsoluteSize.X, 1))
+setHandles()
 update()
 end
-local function UpdateSlideFromValue(value)
-local cY = (1 - value) * (slider.AbsoluteSize.X - slide.AbsoluteSize.X)
-slide.Position = UDim2.new(0, cY, 0.5, 0)
+svPad.InputBegan:Connect(function(input)
+if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+PadDown = true
+UpdatePad(input.Position.X, input.Position.Y)
 end
-local function UpdateRingFromHSV(hue, saturation)
-local r = wheel.AbsoluteSize.X / 2
-local phi = degToRad(hue * 360)
-local len = saturation * r
-local x = len * math.cos(phi)
-local y = len * math.sin(phi)
-ring.Position = UDim2.new(0.5, -x, 0.5, y)
-slider.BackgroundColor3 = fromHSV(hue, saturation, 1)
+end)
+svPad.InputEnded:Connect(function(input)
+if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+PadDown = false
 end
+end)
+hueBar.InputBegan:Connect(function(input)
+if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+HueDown = true
+UpdateHue(input.Position.X)
+end
+end)
+hueBar.InputEnded:Connect(function(input)
+if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+HueDown = false
+end
+end)
+UserInputService.InputChanged:Connect(function(input)
+if input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch then
+if PadDown then
+UpdatePad(Mouse.X, Mouse.Y)
+elseif HueDown then
+UpdateHue(Mouse.X)
+end
+end
+end)
 local function updateFromRGB()
 local r = clampInput(modifierInputs.Red.Text, 0, 255)
 local g = clampInput(modifierInputs.Green.Text, 0, 255)
@@ -3412,8 +3438,7 @@ modifierInputs.Red.Text = r
 modifierInputs.Green.Text = g
 modifierInputs.Blue.Text = b
 hue, saturation, value = Color3.fromRGB(r, g, b):ToHSV()
-UpdateSlideFromValue(value)
-UpdateRingFromHSV(hue, saturation)
+setHandles()
 update()
 end
 local function updateFromHex()
@@ -3426,8 +3451,16 @@ modifierInputs.Red.Text = r
 modifierInputs.Green.Text = g
 modifierInputs.Blue.Text = b
 hue, saturation, value = Color3.fromRGB(r, g, b):ToHSV()
-UpdateSlideFromValue(value)
-UpdateRingFromHSV(hue, saturation)
+setHandles()
+update()
+end
+local function applyColor(c3, withAlpha)
+hue, saturation, value = c3:ToHSV()
+color1.BackgroundColor3 = c3
+color1.BackgroundTransparency = withAlpha or 0
+colour.BackgroundColor3 = c3
+colour.BackgroundTransparency = withAlpha or 0
+setHandles()
 update()
 end
 local function updateFromSettings()
@@ -3438,47 +3471,9 @@ modifierInputs.Red.Text = r
 modifierInputs.Green.Text = g
 modifierInputs.Blue.Text = b
 modifierInputs.Alpha.Text = isAlpha and ColorpickerFunctions.Alpha or 0
-local hexColor = string.format("#%02X%02X%02X", r,g,b)
-modifierInputs.Hex.Text = hexColor
-hue, saturation, value = Color3.fromRGB(r, g, b):ToHSV()
-color1.BackgroundColor3 = ColorpickerFunctions.Color
-color1.BackgroundTransparency = isAlpha and ColorpickerFunctions.Alpha or 0
-colour.BackgroundColor3 = Color3.fromRGB(r,g,b)
-colour.BackgroundTransparency = isAlpha and ColorpickerFunctions.Alpha or 0
-UpdateSlideFromValue(value)
-UpdateRingFromHSV(hue, saturation)
+modifierInputs.Hex.Text = string.format("#%02X%02X%02X", r, g, b)
+applyColor(ColorpickerFunctions.Color, isAlpha and ColorpickerFunctions.Alpha or 0)
 end
-wheel.InputBegan:Connect(function(input)
-if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
-WheelDown = true
-UpdateRing(Mouse.X, Mouse.Y)
-end
-end)
-slider.InputBegan:Connect(function(input)
-if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
-SlideDown = true
-UpdateSlide(Mouse.X)
-end
-end)
-slider.InputEnded:Connect(function(input)
-if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
-SlideDown = false
-end
-end)
-wheel.InputEnded:Connect(function(input)
-if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
-WheelDown = false
-end
-end)
-UserInputService.InputChanged:Connect(function(input)
-if input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch then
-if SlideDown then
-UpdateSlide(Mouse.X)
-elseif WheelDown then
-UpdateRing(Mouse.X, Mouse.Y)
-end
-end
-end)
 local function onFocusEnter(instance)
 local placeholder = instance.Text
 instance.Text = ""
@@ -3489,21 +3484,11 @@ modifierInputs.Red.FocusLost:Connect(updateFromRGB)
 modifierInputs.Green.FocusLost:Connect(updateFromRGB)
 modifierInputs.Blue.FocusLost:Connect(updateFromRGB)
 modifierInputs.Alpha.FocusLost:Connect(update)
-modifierInputs.Hex.Focused:Connect(function()
-onFocusEnter(modifierInputs.Hex)
-end)
-modifierInputs.Red.Focused:Connect(function()
-onFocusEnter(modifierInputs.Red)
-end)
-modifierInputs.Green.Focused:Connect(function()
-onFocusEnter(modifierInputs.Green)
-end)
-modifierInputs.Blue.Focused:Connect(function()
-onFocusEnter(modifierInputs.Blue)
-end)
-modifierInputs.Alpha.Focused:Connect(function()
-onFocusEnter(modifierInputs.Alpha)
-end)
+modifierInputs.Hex.Focused:Connect(function() onFocusEnter(modifierInputs.Hex) end)
+modifierInputs.Red.Focused:Connect(function() onFocusEnter(modifierInputs.Red) end)
+modifierInputs.Green.Focused:Connect(function() onFocusEnter(modifierInputs.Green) end)
+modifierInputs.Blue.Focused:Connect(function() onFocusEnter(modifierInputs.Blue) end)
+modifierInputs.Alpha.Focused:Connect(function() onFocusEnter(modifierInputs.Alpha) end)
 local function makeCanvas()
 local ColorPickerCanvas = Instance.new("CanvasGroup")
 ColorPickerCanvas.Name = "ColorPickerCanvas"
@@ -3538,26 +3523,22 @@ end
 colorPicker.Parent = base
 canvas:Destroy()
 end
-local function colorpickerIn()
-transition(true)
-end
-local function colorpickerOut()
-transition(false)
-end
+local function colorpickerIn() transition(true) end
+local function colorpickerOut() transition(false) end
 interact.MouseButton1Click:Connect(colorpickerIn)
 cancel.MouseButton1Click:Connect(colorpickerOut)
 confirm.MouseButton1Click:Connect(function()
 colorpickerOut()
 local c = fromHSV(hue, saturation, value)
-ColorpickerFunctions.Color = Color3.fromRGB(c.r * 255, c.g * 255, c.b * 255)
-ColorpickerFunctions.Alpha = isAlpha and clampInput(modifierInputs.Alpha.Text, 0, 1)
-color1.BackgroundColor3 = ColorpickerFunctions.Color
-color1.BackgroundTransparency = isAlpha and ColorpickerFunctions.Alpha or 0
-colorC.BackgroundColor3 = ColorpickerFunctions.Color
-colorC.BackgroundTransparency = isAlpha and ColorpickerFunctions.Alpha or 0
+ColorpickerFunctions.Color = c
+ColorpickerFunctions.Alpha = isAlpha and clampInput(modifierInputs.Alpha.Text, 0, 1) or 0
+color1.BackgroundColor3 = c
+color1.BackgroundTransparency = ColorpickerFunctions.Alpha
+colorC.BackgroundColor3 = c
+colorC.BackgroundTransparency = ColorpickerFunctions.Alpha
 if ColorpickerFunctions.Settings.Callback then
 task.spawn(function()
-ColorpickerFunctions.Settings.Callback(ColorpickerFunctions.Color, isAlpha and ColorpickerFunctions.Alpha)
+ColorpickerFunctions.Settings.Callback(c, isAlpha and ColorpickerFunctions.Alpha or nil)
 end)
 end
 end)
@@ -3570,30 +3551,17 @@ colorpicker.Visible = State
 end
 function ColorpickerFunctions:SetColor(color3)
 ColorpickerFunctions.Color = color3
-colorC.BackgroundColor3 = color3
-local r = math.floor(ColorpickerFunctions.Color.R * 255 + 0.5)
-local g = math.floor(ColorpickerFunctions.Color.G * 255 + 0.5)
-local b = math.floor(ColorpickerFunctions.Color.B * 255 + 0.5)
-modifierInputs.Red.Text = r
-modifierInputs.Green.Text = g
-modifierInputs.Blue.Text = b
-local hexColor = string.format("#%02X%02X%02X", r,g,b)
-modifierInputs.Hex.Text = hexColor
-hue, saturation, value = Color3.fromRGB(r, g, b):ToHSV()
-color1.BackgroundColor3 = ColorpickerFunctions.Color
-colour.BackgroundColor3 = Color3.fromRGB(r,g,b)
-UpdateSlideFromValue(value)
-UpdateRingFromHSV(hue, saturation)
+applyColor(color3, isAlpha and ColorpickerFunctions.Alpha or 0)
 if ColorpickerFunctions.Settings.Callback then
 task.spawn(function()
-ColorpickerFunctions.Settings.Callback(ColorpickerFunctions.Color, isAlpha and ColorpickerFunctions.Alpha)
+ColorpickerFunctions.Settings.Callback(color3, isAlpha and ColorpickerFunctions.Alpha or nil)
 end)
 end
 end
 function ColorpickerFunctions:SetAlpha(alpha)
 ColorpickerFunctions.Alpha = alpha
-colorC.Transparency = alpha
-updateFromSettings()
+colour.BackgroundTransparency = alpha
+color1.BackgroundTransparency = alpha
 end
 if Flag then
 MacLib.Options[Flag] = ColorpickerFunctions
