@@ -954,28 +954,14 @@ Transparency = 0.98;
 BrickColor = BrickColor.new('Institutional white');
 }
 local zIndex = 1 - 0.05*frame.ZIndex
-local tl, br = frame.AbsolutePosition, frame.AbsolutePosition + frame.AbsoluteSize
-local tr, bl = Vector2.new(br.x, tl.y), Vector2.new(tl.x, br.y)
-do
-local rot = 0;
-for _, v in ipairs(parents) do
-rot = rot + v.Rotation
-end
-if rot ~= 0 and rot%180 ~= 0 then
-local mid = tl:lerp(br, 0.5)
-local s, c = math.sin(math.rad(rot)), math.cos(math.rad(rot))
-local vec = tl
-tl = Vector2.new(c*(tl.x - mid.x) - s*(tl.y - mid.y), s*(tl.x - mid.x) + c*(tl.y - mid.y)) + mid
-tr = Vector2.new(c*(tr.x - mid.x) - s*(tr.y - mid.y), s*(tr.x - mid.x) + c*(tr.y - mid.y)) + mid
-bl = Vector2.new(c*(bl.x - mid.x) - s*(bl.y - mid.y), s*(bl.x - mid.x) + c*(bl.y - mid.y)) + mid
-br = Vector2.new(c*(br.x - mid.x) - s*(br.y - mid.y), s*(br.x - mid.x) + c*(br.y - mid.y)) + mid
-end
-end
+local vp = camera.ViewportSize
+local tl, br = Vector2.new(0, 0), Vector2.new(vp.X, vp.Y)
+local tr, bl = Vector2.new(br.X, tl.Y), Vector2.new(tl.X, br.Y)
 DrawQuad(
-camera:ScreenPointToRay(tl.x, tl.y, zIndex).Origin,
-camera:ScreenPointToRay(tr.x, tr.y, zIndex).Origin,
-camera:ScreenPointToRay(bl.x, bl.y, zIndex).Origin,
-camera:ScreenPointToRay(br.x, br.y, zIndex).Origin,
+camera:ScreenPointToRay(tl.X, tl.Y, zIndex).Origin,
+camera:ScreenPointToRay(tr.X, tr.Y, zIndex).Origin,
+camera:ScreenPointToRay(bl.X, bl.Y, zIndex).Origin,
+camera:ScreenPointToRay(br.X, br.Y, zIndex).Origin,
 parts
 )
 if fetchProps then
@@ -1668,7 +1654,7 @@ local toggle1Transparency = {Enabled = 0, Disabled = 0.5}
 local togglerHeadTransparency = {Enabled = 0, Disabled = 0.85}
 local TweenSettings = {
 Info = TweenInfo.new(0.15, Enum.EasingStyle.Quad),
-EnabledPosition = UDim2.new(1, 0, 0.5, 0),
+EnabledPosition = UDim2.new(1, -3, 0.5, 0),
 DisabledPosition = UDim2.new(0.5, 0, 0.5, 0),
 }
 local togglebool = ToggleFunctions.Settings.Default
@@ -2884,7 +2870,7 @@ prompt.Name = "Prompt"
 prompt.AnchorPoint = Vector2.new(0.5, 0.5)
 prompt.AutomaticSize = Enum.AutomaticSize.Y
 prompt.BackgroundColor3 = Color3.fromRGB(15, 15, 15)
-prompt.BackgroundTransparency = 0
+prompt.BackgroundTransparency = 0.15
 prompt.BorderColor3 = Color3.fromRGB(0, 0, 0)
 prompt.BorderSizePixel = 0
 prompt.Position = UDim2.fromScale(0.5, 0.5)
@@ -2911,21 +2897,21 @@ uIListLayout.SortOrder = Enum.SortOrder.LayoutOrder
 uIListLayout.Parent = prompt
 local colorOptions = Instance.new("Frame")
 colorOptions.Name = "ColorOptions"
-colorOptions.AutomaticSize = Enum.AutomaticSize.XY
+colorOptions.AutomaticSize = Enum.AutomaticSize.Y
 colorOptions.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
 colorOptions.BackgroundTransparency = 1
 colorOptions.BorderColor3 = Color3.fromRGB(0, 0, 0)
 colorOptions.BorderSizePixel = 0
 colorOptions.LayoutOrder = 1
 colorOptions.Size = UDim2.fromScale(1, 0)
---// SV pad row (procedural palette, no image assets)
+--// SV pad row (fixed 200px height, explicit layout order)
 local wheel = Instance.new("Frame")
 wheel.Name = "Wheel"
-wheel.AutomaticSize = Enum.AutomaticSize.Y
 wheel.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
 wheel.BackgroundTransparency = 1
 wheel.BorderColor3 = Color3.fromRGB(0, 0, 0)
 wheel.BorderSizePixel = 0
+wheel.LayoutOrder = 0
 wheel.Size = UDim2.new(1, 0, 0, 200)
 local svPad = Instance.new("Frame")
 svPad.Name = "SVPad"
@@ -2970,7 +2956,7 @@ padHandle.AnchorPoint = Vector2.new(0.5, 0.5)
 padHandle.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
 padHandle.BorderColor3 = Color3.fromRGB(0, 0, 0)
 padHandle.BorderSizePixel = 0
-padHandle.Position = UDim2.new(1, 0, 0, 0)
+padHandle.Position = UDim2.fromOffset(193, 7)
 padHandle.Size = UDim2.fromOffset(14, 14)
 padHandle.ZIndex = 3
 local padHandleCorner = Instance.new("UICorner")
@@ -3086,7 +3072,7 @@ uIPadding.Name = "UIPadding"
 uIPadding.PaddingRight = UDim.new(0, 5)
 uIPadding.Parent = wheel
 wheel.Parent = colorOptions
---// Hue bar (repurposed slider row)
+--// Hue bar (explicit height + order)
 local hueBar = Instance.new("TextButton")
 hueBar.Name = "HueBar"
 hueBar.FontFace = Font.new("rbxasset://fonts/families/SourceSansPro.json")
@@ -3141,16 +3127,15 @@ hueSlideStroke.Transparency = 0.4
 hueSlideStroke.Parent = hueSlide
 hueSlide.Parent = hueBar
 hueBar.Parent = colorOptions
---// Wells
+--// Wells (fixed single row height + explicit order)
 local colorWells = Instance.new("Frame")
 colorWells.Name = "ColorWells"
-colorWells.AutomaticSize = Enum.AutomaticSize.Y
 colorWells.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
 colorWells.BackgroundTransparency = 1
 colorWells.BorderColor3 = Color3.fromRGB(0, 0, 0)
 colorWells.BorderSizePixel = 0
 colorWells.LayoutOrder = 2
-colorWells.Size = UDim2.fromScale(1, 0)
+colorWells.Size = UDim2.new(1, 0, 0, 30)
 local uIGridLayout = Instance.new("UIGridLayout")
 uIGridLayout.Name = "UIGridLayout"
 uIGridLayout.CellPadding = UDim2.fromOffset(10, 0)
@@ -3360,6 +3345,9 @@ Green = greenBox,
 Blue = blueBox,
 Alpha = alphaBox,
 }
+local PAD_SIZE = 200
+local PAD_MARGIN = 7
+local PAD_TRAVEL = PAD_SIZE - (PAD_MARGIN * 2)
 local function clamp01(n) return math.clamp(n, 0, 1) end
 local function clampInput(v, min, max) local n = tonumber(v) if n then return math.clamp(n, min, max) end return min end
 local function hexToRGB(hex)
@@ -3385,12 +3373,20 @@ math.floor(c.B * 255 + 0.5))
 padHueGradient.Color = ColorSequence.new(Color3.fromRGB(255, 255, 255), fromHSV(hue, 1, 1))
 end
 local function setHandles()
-padHandle.Position = UDim2.new(saturation, 0, 1 - value, 0)
+padHandle.Position = UDim2.fromOffset(PAD_MARGIN + saturation * PAD_TRAVEL, PAD_MARGIN + (1 - value) * PAD_TRAVEL)
 hueSlide.Position = UDim2.new(hue, 0, 0.5, 0)
 end
+local function padLocal(px, py)
+local fx = svPad.AbsoluteSize.X / PAD_SIZE
+local fy = svPad.AbsoluteSize.Y / PAD_SIZE
+if fx <= 0 then fx = 1 end
+if fy <= 0 then fy = 1 end
+return (px - svPad.AbsolutePosition.X) / fx, (py - svPad.AbsolutePosition.Y) / fy
+end
 local function UpdatePad(px, py)
-saturation = clamp01((px - svPad.AbsolutePosition.X) / math.max(svPad.AbsoluteSize.X, 1))
-value = 1 - clamp01((py - svPad.AbsolutePosition.Y) / math.max(svPad.AbsoluteSize.Y, 1))
+local lx, ly = padLocal(px, py)
+saturation = clamp01((lx - PAD_MARGIN) / PAD_TRAVEL)
+value = 1 - clamp01((ly - PAD_MARGIN) / PAD_TRAVEL)
 setHandles()
 update()
 end
@@ -3998,7 +3994,7 @@ notification.Name = "Notification"
 notification.AnchorPoint = Vector2.new(0.5, 0.5)
 notification.AutomaticSize = Enum.AutomaticSize.Y
 notification.BackgroundColor3 = Color3.fromRGB(15, 15, 15)
-notification.BackgroundTransparency = 0
+notification.BackgroundTransparency = 0.2
 notification.BorderColor3 = Color3.fromRGB(0, 0, 0)
 notification.BorderSizePixel = 0
 notification.Position = UDim2.fromScale(0.5, 0.5)
