@@ -954,14 +954,28 @@ Transparency = 0.98;
 BrickColor = BrickColor.new('Institutional white');
 }
 local zIndex = 1 - 0.05*frame.ZIndex
-local vp = camera.ViewportSize
-local tl, br = Vector2.new(0, 0), Vector2.new(vp.X, vp.Y)
-local tr, bl = Vector2.new(br.X, tl.Y), Vector2.new(tl.X, br.Y)
+local tl, br = frame.AbsolutePosition, frame.AbsolutePosition + frame.AbsoluteSize
+local tr, bl = Vector2.new(br.x, tl.y), Vector2.new(tl.x, br.y)
+do
+local rot = 0;
+for _, v in ipairs(parents) do
+rot = rot + v.Rotation
+end
+if rot ~= 0 and rot%180 ~= 0 then
+local mid = tl:lerp(br, 0.5)
+local s, c = math.sin(math.rad(rot)), math.cos(math.rad(rot))
+local vec = tl
+tl = Vector2.new(c*(tl.x - mid.x) - s*(tl.y - mid.y), s*(tl.x - mid.x) + c*(tl.y - mid.y)) + mid
+tr = Vector2.new(c*(tr.x - mid.x) - s*(tr.y - mid.y), s*(tr.x - mid.x) + c*(tr.y - mid.y)) + mid
+bl = Vector2.new(c*(bl.x - mid.x) - s*(bl.y - mid.y), s*(bl.x - mid.x) + c*(bl.y - mid.y)) + mid
+br = Vector2.new(c*(br.x - mid.x) - s*(br.y - mid.y), s*(br.x - mid.x) + c*(br.y - mid.y)) + mid
+end
+end
 DrawQuad(
-camera:ScreenPointToRay(tl.X, tl.Y, zIndex).Origin,
-camera:ScreenPointToRay(tr.X, tr.Y, zIndex).Origin,
-camera:ScreenPointToRay(bl.X, bl.Y, zIndex).Origin,
-camera:ScreenPointToRay(br.X, br.Y, zIndex).Origin,
+camera:ScreenPointToRay(tl.x, tl.y, zIndex).Origin,
+camera:ScreenPointToRay(tr.x, tr.y, zIndex).Origin,
+camera:ScreenPointToRay(bl.x, bl.y, zIndex).Origin,
+camera:ScreenPointToRay(br.x, br.y, zIndex).Origin,
 parts
 )
 if fetchProps then
@@ -2865,16 +2879,16 @@ local baseUICorner = Instance.new("UICorner")
 baseUICorner.Name = "BaseUICorner"
 baseUICorner.CornerRadius = UDim.new(0, 10)
 baseUICorner.Parent = colorPicker
+--// Prompt: fixed size, everything manually positioned (no autosize/layout collapse possible)
 local prompt = Instance.new("Frame")
 prompt.Name = "Prompt"
-prompt.AnchorPoint = Vector2.new(0.5, 0.5)
-prompt.AutomaticSize = Enum.AutomaticSize.Y
 prompt.BackgroundColor3 = Color3.fromRGB(15, 15, 15)
-prompt.BackgroundTransparency = 0.15
+prompt.BackgroundTransparency = 0
 prompt.BorderColor3 = Color3.fromRGB(0, 0, 0)
 prompt.BorderSizePixel = 0
+prompt.AnchorPoint = Vector2.new(0.5, 0.5)
 prompt.Position = UDim2.fromScale(0.5, 0.5)
-prompt.Size = UDim2.fromOffset(420, 0)
+prompt.Size = UDim2.fromOffset(420, 430)
 local promptUIScale = Instance.new("UIScale")
 promptUIScale.Name = "BaseUIScale"
 promptUIScale.Parent = prompt
@@ -2889,114 +2903,150 @@ local promptUICorner = Instance.new("UICorner")
 promptUICorner.Name = "PromptUICorner"
 promptUICorner.CornerRadius = UDim.new(0, 10)
 promptUICorner.Parent = prompt
-local uIListLayout = Instance.new("UIListLayout")
-uIListLayout.Name = "UIListLayout"
-uIListLayout.Padding = UDim.new(0, 10)
-uIListLayout.HorizontalAlignment = Enum.HorizontalAlignment.Center
-uIListLayout.SortOrder = Enum.SortOrder.LayoutOrder
-uIListLayout.Parent = prompt
-local colorOptions = Instance.new("Frame")
-colorOptions.Name = "ColorOptions"
-colorOptions.AutomaticSize = Enum.AutomaticSize.Y
-colorOptions.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
-colorOptions.BackgroundTransparency = 1
-colorOptions.BorderColor3 = Color3.fromRGB(0, 0, 0)
-colorOptions.BorderSizePixel = 0
-colorOptions.LayoutOrder = 1
-colorOptions.Size = UDim2.fromScale(1, 0)
---// SV pad row (fixed 200px height, explicit layout order)
-local wheel = Instance.new("Frame")
-wheel.Name = "Wheel"
-wheel.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
-wheel.BackgroundTransparency = 1
-wheel.BorderColor3 = Color3.fromRGB(0, 0, 0)
-wheel.BorderSizePixel = 0
-wheel.LayoutOrder = 0
-wheel.Size = UDim2.new(1, 0, 0, 200)
-local svPad = Instance.new("Frame")
-svPad.Name = "SVPad"
-svPad.AnchorPoint = Vector2.new(0, 0.5)
-svPad.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
-svPad.BorderColor3 = Color3.fromRGB(0, 0, 0)
-svPad.BorderSizePixel = 0
-svPad.ClipsDescendants = true
-svPad.Position = UDim2.new(0, 0, 0.5, 0)
-svPad.Size = UDim2.fromOffset(200, 200)
-local svPadCorner = Instance.new("UICorner")
-svPadCorner.Name = "SVPadCorner"
-svPadCorner.CornerRadius = UDim.new(0, 6)
-svPadCorner.Parent = svPad
-local padHue = Instance.new("Frame")
-padHue.Name = "PadHue"
-padHue.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
-padHue.BorderColor3 = Color3.fromRGB(0, 0, 0)
-padHue.BorderSizePixel = 0
-padHue.Size = UDim2.fromScale(1, 1)
-local padHueGradient = Instance.new("UIGradient")
-padHueGradient.Color = ColorSequence.new(Color3.fromRGB(255, 255, 255), Color3.fromRGB(255, 0, 0))
-padHueGradient.Parent = padHue
-padHue.Parent = svPad
-local padDark = Instance.new("Frame")
-padDark.Name = "PadDark"
-padDark.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
-padDark.BorderColor3 = Color3.fromRGB(0, 0, 0)
-padDark.BorderSizePixel = 0
-padDark.Size = UDim2.fromScale(1, 1)
-local padDarkGradient = Instance.new("UIGradient")
-padDarkGradient.Rotation = 90
-padDarkGradient.Transparency = NumberSequence.new({
-NumberSequenceKeypoint.new(0, 1),
-NumberSequenceKeypoint.new(1, 0),
-})
-padDarkGradient.Parent = padDark
-padDark.Parent = svPad
-local padHandle = Instance.new("Frame")
-padHandle.Name = "PadHandle"
-padHandle.AnchorPoint = Vector2.new(0.5, 0.5)
-padHandle.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
-padHandle.BorderColor3 = Color3.fromRGB(0, 0, 0)
-padHandle.BorderSizePixel = 0
-padHandle.Position = UDim2.fromOffset(193, 7)
-padHandle.Size = UDim2.fromOffset(14, 14)
-padHandle.ZIndex = 3
-local padHandleCorner = Instance.new("UICorner")
-padHandleCorner.Name = "PadHandleCorner"
-padHandleCorner.CornerRadius = UDim.new(1, 0)
-padHandleCorner.Parent = padHandle
-local padHandleStroke = Instance.new("UIStroke")
-padHandleStroke.Name = "PadHandleStroke"
-padHandleStroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
-padHandleStroke.Color = Color3.fromRGB(0, 0, 0)
-padHandleStroke.Thickness = 2
-padHandleStroke.Transparency = 0.35
-padHandleStroke.Parent = padHandle
-padHandle.Parent = svPad
-svPad.Parent = wheel
-local inputs = Instance.new("Frame")
-inputs.Name = "Inputs"
-inputs.AnchorPoint = Vector2.new(1, 0.5)
-inputs.AutomaticSize = Enum.AutomaticSize.XY
-inputs.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
-inputs.BackgroundTransparency = 1
-inputs.BorderColor3 = Color3.fromRGB(0, 0, 0)
-inputs.BorderSizePixel = 0
-inputs.LayoutOrder = 1
-inputs.Position = UDim2.fromScale(1, 0.5)
-local uIListLayout2 = Instance.new("UIListLayout")
-uIListLayout2.Name = "UIListLayout"
-uIListLayout2.Padding = UDim.new(0, 5)
-uIListLayout2.SortOrder = Enum.SortOrder.LayoutOrder
-uIListLayout2.Parent = inputs
-local function makeColorInput(labelText, layoutOrder, defaultText, visible)
+--// Title
+local paragraphHeader = Instance.new("TextLabel")
+paragraphHeader.Name = "ParagraphHeader"
+paragraphHeader.FontFace = Font.new(assets.interFont, Enum.FontWeight.SemiBold, Enum.FontStyle.Normal)
+paragraphHeader.RichText = true
+paragraphHeader.Text = ColorpickerFunctions.Settings.Name
+paragraphHeader.TextColor3 = Color3.fromRGB(255, 255, 255)
+paragraphHeader.TextSize = 17
+paragraphHeader.TextTransparency = 0.25
+paragraphHeader.TextWrapped = true
+paragraphHeader.TextXAlignment = Enum.TextXAlignment.Center
+paragraphHeader.TextYAlignment = Enum.TextYAlignment.Center
+paragraphHeader.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+paragraphHeader.BackgroundTransparency = 1
+paragraphHeader.BorderColor3 = Color3.fromRGB(0, 0, 0)
+paragraphHeader.BorderSizePixel = 0
+paragraphHeader.Position = UDim2.fromOffset(20, 14)
+paragraphHeader.Size = UDim2.fromOffset(380, 28)
+paragraphHeader.Parent = prompt
+local line = Instance.new("Frame")
+line.Name = "Line"
+line.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+line.BackgroundTransparency = 0.9
+line.BorderColor3 = Color3.fromRGB(0, 0, 0)
+line.BorderSizePixel = 0
+line.Position = UDim2.fromOffset(20, 48)
+line.Size = UDim2.fromOffset(380, 1)
+line.Parent = prompt
+--// Circular hue wheel (procedural, 48 sectors)
+local WHEEL_SIZE = 180
+local WHEEL_X = 20
+local WHEEL_Y = 66
+local wheelCircle = Instance.new("Frame")
+wheelCircle.Name = "WheelCircle"
+wheelCircle.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
+wheelCircle.BackgroundTransparency = 0
+wheelCircle.BorderColor3 = Color3.fromRGB(0, 0, 0)
+wheelCircle.BorderSizePixel = 0
+wheelCircle.ClipsDescendants = true
+wheelCircle.Position = UDim2.fromOffset(WHEEL_X, WHEEL_Y)
+wheelCircle.Size = UDim2.fromOffset(WHEEL_SIZE, WHEEL_SIZE)
+local wheelCircleCorner = Instance.new("UICorner")
+wheelCircleCorner.Name = "WheelCircleCorner"
+wheelCircleCorner.CornerRadius = UDim.new(1, 0)
+wheelCircleCorner.Parent = wheelCircle
+local SECTORS = 48
+local chord = (2 * math.pi * (WHEEL_SIZE / 2) / SECTORS) + 2
+for i = 0, SECTORS - 1 do
+local angle = i * (360 / SECTORS)
+local sector = Instance.new("Frame")
+sector.Name = "Sector" .. i
+sector.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+sector.BorderColor3 = Color3.fromRGB(0, 0, 0)
+sector.BorderSizePixel = 0
+sector.AnchorPoint = Vector2.new(0, 0.5)
+sector.Position = UDim2.fromScale(0.5, 0.5)
+sector.Size = UDim2.new(0.5, 2, 0, chord)
+sector.Rotation = angle
+local sectorGradient = Instance.new("UIGradient")
+sectorGradient.Color = ColorSequence.new(Color3.fromRGB(255, 255, 255), Color3.fromHSV(angle / 360, 1, 1))
+sectorGradient.Parent = sector
+sector.Parent = wheelCircle
+end
+local ring = Instance.new("Frame")
+ring.Name = "Ring"
+ring.AnchorPoint = Vector2.new(0.5, 0.5)
+ring.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+ring.BackgroundTransparency = 1
+ring.BorderColor3 = Color3.fromRGB(0, 0, 0)
+ring.BorderSizePixel = 0
+ring.Position = UDim2.fromScale(0.5, 0.5)
+ring.Size = UDim2.fromOffset(18, 18)
+ring.ZIndex = 3
+local ringCorner = Instance.new("UICorner")
+ringCorner.Name = "RingCorner"
+ringCorner.CornerRadius = UDim.new(1, 0)
+ringCorner.Parent = ring
+local ringStroke = Instance.new("UIStroke")
+ringStroke.Name = "RingStroke"
+ringStroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
+ringStroke.Color = Color3.fromRGB(255, 255, 255)
+ringStroke.Thickness = 2
+ringStroke.Transparency = 0
+ringStroke.Parent = ring
+local ringStroke2 = Instance.new("UIStroke")
+ringStroke2.Name = "RingStrokeInner"
+ringStroke2.ApplyStrokeMode = Enum.ApplyStrokeMode.Inside
+ringStroke2.Color = Color3.fromRGB(0, 0, 0)
+ringStroke2.Thickness = 1
+ringStroke2.Transparency = 0.4
+ringStroke2.Parent = ring
+ring.Parent = wheelCircle
+wheelCircle.Parent = prompt
+--// Value bar
+local valueBar = Instance.new("TextButton")
+valueBar.Name = "ValueBar"
+valueBar.AutoButtonColor = false
+valueBar.Text = ""
+valueBar.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+valueBar.BorderColor3 = Color3.fromRGB(0, 0, 0)
+valueBar.BorderSizePixel = 0
+valueBar.Position = UDim2.fromOffset(20, 262)
+valueBar.Size = UDim2.fromOffset(380, 14)
+local valueBarCorner = Instance.new("UICorner")
+valueBarCorner.Name = "ValueBarCorner"
+valueBarCorner.CornerRadius = UDim.new(1, 0)
+valueBarCorner.Parent = valueBar
+local valueGradient = Instance.new("UIGradient")
+valueGradient.Name = "ValueGradient"
+valueGradient.Color = ColorSequence.new(Color3.fromRGB(255, 255, 255), Color3.fromRGB(0, 0, 0))
+valueGradient.Parent = valueBar
+local slide = Instance.new("Frame")
+slide.Name = "Slide"
+slide.AnchorPoint = Vector2.new(0.5, 0.5)
+slide.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+slide.BorderColor3 = Color3.fromRGB(0, 0, 0)
+slide.BorderSizePixel = 0
+slide.Position = UDim2.new(0, 0, 0.5, 0)
+slide.Size = UDim2.fromOffset(10, 20)
+slide.ZIndex = 2
+local slideCorner = Instance.new("UICorner")
+slideCorner.Name = "SlideCorner"
+slideCorner.CornerRadius = UDim.new(1, 0)
+slideCorner.Parent = slide
+local slideStroke = Instance.new("UIStroke")
+slideStroke.Name = "SlideStroke"
+slideStroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
+slideStroke.Color = Color3.fromRGB(0, 0, 0)
+slideStroke.Thickness = 2
+slideStroke.Transparency = 0.4
+slideStroke.Parent = slide
+slide.Parent = valueBar
+valueBar.Parent = prompt
+--// RGB/Hex/Alpha inputs column (manual rows)
+local modifierInputs = {}
+local function makeColorInput(labelText, rowIndex, defaultText, visible)
 local rowFrame = Instance.new("Frame")
 rowFrame.Name = labelText
-rowFrame.AutomaticSize = Enum.AutomaticSize.XY
-rowFrame.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+rowFrame.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
 rowFrame.BackgroundTransparency = 1
 rowFrame.BorderColor3 = Color3.fromRGB(0, 0, 0)
 rowFrame.BorderSizePixel = 0
-rowFrame.LayoutOrder = layoutOrder
-rowFrame.Size = UDim2.fromOffset(0, 38)
+rowFrame.Position = UDim2.fromOffset(215, 66 + rowIndex * 40)
+rowFrame.Size = UDim2.fromOffset(185, 34)
 rowFrame.Visible = visible
 local rowLabel = Instance.new("TextLabel")
 rowLabel.Name = "InputName"
@@ -3007,23 +3057,14 @@ rowLabel.TextSize = 13
 rowLabel.TextTransparency = 0.5
 rowLabel.TextTruncate = Enum.TextTruncate.AtEnd
 rowLabel.TextXAlignment = Enum.TextXAlignment.Left
-rowLabel.TextYAlignment = Enum.TextYAlignment.Top
-rowLabel.AnchorPoint = Vector2.new(0, 0.5)
-rowLabel.AutomaticSize = Enum.AutomaticSize.XY
+rowLabel.TextYAlignment = Enum.TextYAlignment.Center
 rowLabel.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
 rowLabel.BackgroundTransparency = 1
 rowLabel.BorderColor3 = Color3.fromRGB(0, 0, 0)
 rowLabel.BorderSizePixel = 0
-rowLabel.LayoutOrder = 2
-rowLabel.Position = UDim2.fromScale(0, 0.5)
+rowLabel.Position = UDim2.fromOffset(0, 0)
+rowLabel.Size = UDim2.fromOffset(70, 34)
 rowLabel.Parent = rowFrame
-local rowLayout = Instance.new("UIListLayout")
-rowLayout.Name = "RowLayout"
-rowLayout.Padding = UDim.new(0, 15)
-rowLayout.FillDirection = Enum.FillDirection.Horizontal
-rowLayout.SortOrder = Enum.SortOrder.LayoutOrder
-rowLayout.VerticalAlignment = Enum.VerticalAlignment.Center
-rowLayout.Parent = rowFrame
 local rowBox = Instance.new("TextBox")
 rowBox.Name = "InputBox"
 rowBox.ClearTextOnFocus = false
@@ -3040,9 +3081,8 @@ rowBox.BackgroundTransparency = 0.95
 rowBox.BorderColor3 = Color3.fromRGB(0, 0, 0)
 rowBox.BorderSizePixel = 0
 rowBox.ClipsDescendants = true
-rowBox.LayoutOrder = 1
-rowBox.Position = UDim2.fromScale(1, 0.5)
-rowBox.Size = UDim2.fromOffset(75, 25)
+rowBox.Position = UDim2.new(1, 0, 0.5, 0)
+rowBox.Size = UDim2.fromOffset(105, 26)
 local rowBoxCorner = Instance.new("UICorner")
 rowBoxCorner.CornerRadius = UDim.new(0, 4)
 rowBoxCorner.Parent = rowBox
@@ -3051,97 +3091,20 @@ rowBoxStroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
 rowBoxStroke.Color = Color3.fromRGB(255, 255, 255)
 rowBoxStroke.Transparency = 0.9
 rowBoxStroke.Parent = rowBox
-local rowBoxConstraint = Instance.new("UISizeConstraint")
-rowBoxConstraint.Parent = rowBox
 local rowBoxPadding = Instance.new("UIPadding")
 rowBoxPadding.PaddingLeft = UDim.new(0, 8)
-rowBoxPadding.PaddingRight = UDim.new(0, 10)
+rowBoxPadding.PaddingRight = UDim.new(0, 8)
 rowBoxPadding.Parent = rowBox
 rowBox.Parent = rowFrame
-rowFrame.Parent = inputs
+rowFrame.Parent = prompt
 return rowBox
 end
-local redBox = makeColorInput("Red", 1, "255", true)
-local greenBox = makeColorInput("Green", 2, "255", true)
-local blueBox = makeColorInput("Blue", 3, "255", true)
-local alphaBox = makeColorInput("Alpha", 4, "0", isAlpha)
-local hexBox = makeColorInput("Hex", 5, "#FFFFFF", true)
-inputs.Parent = wheel
-local uIPadding = Instance.new("UIPadding")
-uIPadding.Name = "UIPadding"
-uIPadding.PaddingRight = UDim.new(0, 5)
-uIPadding.Parent = wheel
-wheel.Parent = colorOptions
---// Hue bar (explicit height + order)
-local hueBar = Instance.new("TextButton")
-hueBar.Name = "HueBar"
-hueBar.FontFace = Font.new("rbxasset://fonts/families/SourceSansPro.json")
-hueBar.Text = ""
-hueBar.AutoButtonColor = false
-hueBar.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
-hueBar.BorderColor3 = Color3.fromRGB(0, 0, 0)
-hueBar.BorderSizePixel = 0
-hueBar.LayoutOrder = 1
-hueBar.Size = UDim2.new(1, 0, 0, 15)
-local hueBarCorner = Instance.new("UICorner")
-hueBarCorner.Name = "HueBarCorner"
-hueBarCorner.CornerRadius = UDim.new(0, 6)
-hueBarCorner.Parent = hueBar
-local hueBarStroke = Instance.new("UIStroke")
-hueBarStroke.Name = "HueBarStroke"
-hueBarStroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
-hueBarStroke.Color = Color3.fromRGB(255, 255, 255)
-hueBarStroke.Transparency = 0.9
-hueBarStroke.Parent = hueBar
-local hueGradient = Instance.new("UIGradient")
-hueGradient.Name = "HueGradient"
-hueGradient.Color = ColorSequence.new({
-ColorSequenceKeypoint.new(0, Color3.fromRGB(255, 0, 0)),
-ColorSequenceKeypoint.new(0.17, Color3.fromRGB(255, 255, 0)),
-ColorSequenceKeypoint.new(0.33, Color3.fromRGB(0, 255, 0)),
-ColorSequenceKeypoint.new(0.5, Color3.fromRGB(0, 255, 255)),
-ColorSequenceKeypoint.new(0.67, Color3.fromRGB(0, 0, 255)),
-ColorSequenceKeypoint.new(0.83, Color3.fromRGB(255, 0, 255)),
-ColorSequenceKeypoint.new(1, Color3.fromRGB(255, 0, 0)),
-})
-hueGradient.Parent = hueBar
-local hueSlide = Instance.new("Frame")
-hueSlide.Name = "HueSlide"
-hueSlide.AnchorPoint = Vector2.new(0.5, 0.5)
-hueSlide.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
-hueSlide.BorderColor3 = Color3.fromRGB(0, 0, 0)
-hueSlide.BorderSizePixel = 0
-hueSlide.Position = UDim2.new(0, 0, 0.5, 0)
-hueSlide.Size = UDim2.new(0, 10, 1, 7)
-hueSlide.ZIndex = 2
-local hueSlideCorner = Instance.new("UICorner")
-hueSlideCorner.Name = "HueSlideCorner"
-hueSlideCorner.CornerRadius = UDim.new(1, 0)
-hueSlideCorner.Parent = hueSlide
-local hueSlideStroke = Instance.new("UIStroke")
-hueSlideStroke.Name = "HueSlideStroke"
-hueSlideStroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
-hueSlideStroke.Color = Color3.fromRGB(0, 0, 0)
-hueSlideStroke.Thickness = 2
-hueSlideStroke.Transparency = 0.4
-hueSlideStroke.Parent = hueSlide
-hueSlide.Parent = hueBar
-hueBar.Parent = colorOptions
---// Wells (fixed single row height + explicit order)
-local colorWells = Instance.new("Frame")
-colorWells.Name = "ColorWells"
-colorWells.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
-colorWells.BackgroundTransparency = 1
-colorWells.BorderColor3 = Color3.fromRGB(0, 0, 0)
-colorWells.BorderSizePixel = 0
-colorWells.LayoutOrder = 2
-colorWells.Size = UDim2.new(1, 0, 0, 30)
-local uIGridLayout = Instance.new("UIGridLayout")
-uIGridLayout.Name = "UIGridLayout"
-uIGridLayout.CellPadding = UDim2.fromOffset(10, 0)
-uIGridLayout.CellSize = UDim2.new(0.5, -5, 0, 30)
-uIGridLayout.SortOrder = Enum.SortOrder.LayoutOrder
-uIGridLayout.Parent = colorWells
+modifierInputs.Red = makeColorInput("Red", 0, "255", true)
+modifierInputs.Green = makeColorInput("Green", 1, "255", true)
+modifierInputs.Blue = makeColorInput("Blue", 2, "255", true)
+modifierInputs.Alpha = makeColorInput("Alpha", 3, "0", isAlpha)
+modifierInputs.Hex = makeColorInput("Hex", 4, "#FFFFFF", true)
+--// Wells
 local newColor = Instance.new("ImageLabel")
 newColor.Name = "NewColor"
 newColor.Image = assets.grid
@@ -3151,9 +3114,11 @@ newColor.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
 newColor.BackgroundTransparency = 1
 newColor.BorderColor3 = Color3.fromRGB(0, 0, 0)
 newColor.BorderSizePixel = 0
-newColor.Size = UDim2.fromOffset(100, 100)
+newColor.Position = UDim2.fromOffset(20, 292)
+newColor.Size = UDim2.fromOffset(185, 30)
 local uICorner2 = Instance.new("UICorner")
 uICorner2.Name = "UICorner"
+uICorner2.CornerRadius = UDim.new(0, 6)
 uICorner2.Parent = newColor
 local color = Instance.new("Frame")
 color.Name = "Color"
@@ -3166,7 +3131,7 @@ local uICorner3 = Instance.new("UICorner")
 uICorner3.Name = "UICorner"
 uICorner3.Parent = color
 color.Parent = newColor
-newColor.Parent = colorWells
+newColor.Parent = prompt
 local oldColor = Instance.new("ImageLabel")
 oldColor.Name = "OldColor"
 oldColor.Image = assets.grid
@@ -3176,8 +3141,8 @@ oldColor.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
 oldColor.BackgroundTransparency = 1
 oldColor.BorderColor3 = Color3.fromRGB(0, 0, 0)
 oldColor.BorderSizePixel = 0
-oldColor.LayoutOrder = 1
-oldColor.Size = UDim2.fromOffset(100, 100)
+oldColor.Position = UDim2.fromOffset(215, 292)
+oldColor.Size = UDim2.fromOffset(185, 30)
 local uICorner4 = Instance.new("UICorner")
 uICorner4.Name = "UICorner"
 uICorner4.Parent = oldColor
@@ -3192,162 +3157,54 @@ local uICorner5 = Instance.new("UICorner")
 uICorner5.Name = "UICorner"
 uICorner5.Parent = color1
 color1.Parent = oldColor
-oldColor.Parent = colorWells
-colorWells.Parent = colorOptions
-colorOptions.Parent = prompt
-local interactions = Instance.new("Frame")
-interactions.Name = "Interactions"
-interactions.AutomaticSize = Enum.AutomaticSize.Y
-interactions.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
-interactions.BackgroundTransparency = 1
-interactions.BorderColor3 = Color3.fromRGB(0, 0, 0)
-interactions.BorderSizePixel = 0
-interactions.LayoutOrder = 2
-interactions.Size = UDim2.fromScale(1, 0)
-local uIListLayout8 = Instance.new("UIListLayout")
-uIListLayout8.Name = "UIListLayout"
-uIListLayout8.Padding = UDim.new(0, 10)
-uIListLayout8.SortOrder = Enum.SortOrder.LayoutOrder
-uIListLayout8.Parent = interactions
+oldColor.Parent = prompt
+--// Buttons
 local confirm = Instance.new("TextButton")
 confirm.Name = "Confirm"
-confirm.FontFace = Font.new(
-"rbxassetid://12187365364",
-Enum.FontWeight.Medium,
-Enum.FontStyle.Normal
-)
+confirm.FontFace = Font.new(assets.interFont, Enum.FontWeight.Medium, Enum.FontStyle.Normal)
 confirm.Text = "Confirm"
 confirm.TextColor3 = Color3.fromRGB(255, 255, 255)
 confirm.TextSize = 15
 confirm.TextTransparency = 0.5
 confirm.TextTruncate = Enum.TextTruncate.AtEnd
 confirm.AutoButtonColor = false
-confirm.AutomaticSize = Enum.AutomaticSize.Y
 confirm.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
 confirm.BorderColor3 = Color3.fromRGB(0, 0, 0)
 confirm.BorderSizePixel = 0
-confirm.Size = UDim2.fromScale(1, 0)
-local uIPadding1 = Instance.new("UIPadding")
-uIPadding1.Name = "UIPadding"
-uIPadding1.PaddingBottom = UDim.new(0, 9)
-uIPadding1.PaddingLeft = UDim.new(0, 10)
-uIPadding1.PaddingRight = UDim.new(0, 10)
-uIPadding1.PaddingTop = UDim.new(0, 9)
-uIPadding1.Parent = confirm
+confirm.Position = UDim2.fromOffset(20, 336)
+confirm.Size = UDim2.fromOffset(380, 34)
 local confirmUICorner = Instance.new("UICorner")
 confirmUICorner.Name = "ConfirmUICorner"
 confirmUICorner.CornerRadius = UDim.new(0, 10)
 confirmUICorner.Parent = confirm
-confirm.Parent = interactions
+confirm.Parent = prompt
 local cancel = Instance.new("TextButton")
 cancel.Name = "Cancel"
-cancel.FontFace = Font.new(
-"rbxassetid://12187365364",
-Enum.FontWeight.Medium,
-Enum.FontStyle.Normal
-)
+cancel.FontFace = Font.new(assets.interFont, Enum.FontWeight.Medium, Enum.FontStyle.Normal)
 cancel.Text = "Cancel"
 cancel.TextColor3 = Color3.fromRGB(255, 255, 255)
 cancel.TextSize = 15
 cancel.TextTransparency = 0.5
 cancel.TextTruncate = Enum.TextTruncate.AtEnd
 cancel.AutoButtonColor = false
-cancel.AutomaticSize = Enum.AutomaticSize.Y
 cancel.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
 cancel.BorderColor3 = Color3.fromRGB(0, 0, 0)
 cancel.BorderSizePixel = 0
-cancel.Size = UDim2.fromScale(1, 0)
+cancel.Position = UDim2.fromOffset(20, 378)
+cancel.Size = UDim2.fromOffset(380, 34)
 local cancelUICorner = Instance.new("UICorner")
 cancelUICorner.Name = "CancelUICorner"
 cancelUICorner.CornerRadius = UDim.new(0, 10)
 cancelUICorner.Parent = cancel
-local uIPadding2 = Instance.new("UIPadding")
-uIPadding2.Name = "UIPadding"
-uIPadding2.PaddingBottom = UDim.new(0, 9)
-uIPadding2.PaddingLeft = UDim.new(0, 10)
-uIPadding2.PaddingRight = UDim.new(0, 10)
-uIPadding2.PaddingTop = UDim.new(0, 9)
-uIPadding2.Parent = cancel
-cancel.Parent = interactions
-local uIPadding3 = Instance.new("UIPadding")
-uIPadding3.Name = "UIPadding"
-uIPadding3.PaddingTop = UDim.new(0, 10)
-uIPadding3.Parent = interactions
-interactions.Parent = prompt
-local promptUIPadding = Instance.new("UIPadding")
-promptUIPadding.Name = "PromptUIPadding"
-promptUIPadding.PaddingBottom = UDim.new(0, 20)
-promptUIPadding.PaddingLeft = UDim.new(0, 20)
-promptUIPadding.PaddingRight = UDim.new(0, 20)
-promptUIPadding.PaddingTop = UDim.new(0, 20)
-promptUIPadding.Parent = prompt
-local paragraph = Instance.new("Frame")
-paragraph.Name = "Paragraph"
-paragraph.AutomaticSize = Enum.AutomaticSize.Y
-paragraph.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
-paragraph.BackgroundTransparency = 1
-paragraph.BorderColor3 = Color3.fromRGB(0, 0, 0)
-paragraph.BorderSizePixel = 0
-paragraph.Size = UDim2.fromScale(1, 0)
-local paragraphHeader = Instance.new("TextLabel")
-paragraphHeader.Name = "ParagraphHeader"
-paragraphHeader.FontFace = Font.new(
-"rbxassetid://12187365364",
-Enum.FontWeight.SemiBold,
-Enum.FontStyle.Normal
-)
-paragraphHeader.RichText = true
-paragraphHeader.Text = ColorpickerFunctions.Settings.Name
-paragraphHeader.TextColor3 = Color3.fromRGB(255, 255, 255)
-paragraphHeader.TextSize = 18
-paragraphHeader.TextTransparency = 0.4
-paragraphHeader.TextWrapped = true
-paragraphHeader.TextYAlignment = Enum.TextYAlignment.Top
-paragraphHeader.AutomaticSize = Enum.AutomaticSize.XY
-paragraphHeader.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
-paragraphHeader.BackgroundTransparency = 1
-paragraphHeader.BorderColor3 = Color3.fromRGB(0, 0, 0)
-paragraphHeader.BorderSizePixel = 0
-paragraphHeader.Size = UDim2.fromScale(1, 0)
-paragraphHeader.Parent = paragraph
-local uIListLayout9 = Instance.new("UIListLayout")
-uIListLayout9.Name = "UIListLayout"
-uIListLayout9.Padding = UDim.new(0, 15)
-uIListLayout9.HorizontalAlignment = Enum.HorizontalAlignment.Center
-uIListLayout9.SortOrder = Enum.SortOrder.LayoutOrder
-uIListLayout9.Parent = paragraph
-local uIPadding4 = Instance.new("UIPadding")
-uIPadding4.Name = "UIPadding"
-uIPadding4.PaddingBottom = UDim.new(0, 15)
-uIPadding4.Parent = paragraph
-local line = Instance.new("Frame")
-line.Name = "Line"
-line.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
-line.BackgroundTransparency = 0.9
-line.BorderColor3 = Color3.fromRGB(0, 0, 0)
-line.BorderSizePixel = 0
-line.LayoutOrder = 1
-line.Size = UDim2.new(1, 0, 0, 1)
-line.Parent = paragraph
-paragraph.Parent = prompt
+cancel.Parent = prompt
 prompt.Parent = colorPicker
 colorPicker.Parent = base
---// Colorpicker logic (HSV: hue bar + SV pad)
+--// Colorpicker logic (polar wheel + value bar)
 local fromHSV = Color3.fromHSV
 local Mouse = LocalPlayer:GetMouse()
 local hue, saturation, value = 0, 0, 1
-local PadDown, HueDown = false, false
+local WheelDown, SlideDown = false, false
 local colour = color
-local modifierInputs = {
-Hex = hexBox,
-Red = redBox,
-Green = greenBox,
-Blue = blueBox,
-Alpha = alphaBox,
-}
-local PAD_SIZE = 200
-local PAD_MARGIN = 7
-local PAD_TRAVEL = PAD_SIZE - (PAD_MARGIN * 2)
 local function clamp01(n) return math.clamp(n, 0, 1) end
 local function clampInput(v, min, max) local n = tonumber(v) if n then return math.clamp(n, min, max) end return min end
 local function hexToRGB(hex)
@@ -3370,59 +3227,70 @@ modifierInputs.Hex.Text = string.format("#%02X%02X%02X",
 math.floor(c.R * 255 + 0.5),
 math.floor(c.G * 255 + 0.5),
 math.floor(c.B * 255 + 0.5))
-padHueGradient.Color = ColorSequence.new(Color3.fromRGB(255, 255, 255), fromHSV(hue, 1, 1))
 end
 local function setHandles()
-padHandle.Position = UDim2.fromOffset(PAD_MARGIN + saturation * PAD_TRAVEL, PAD_MARGIN + (1 - value) * PAD_TRAVEL)
-hueSlide.Position = UDim2.new(hue, 0, 0.5, 0)
+local ang = hue * 2 * math.pi
+ring.Position = UDim2.new(0.5 + math.cos(ang) * saturation * 0.5, 0, 0.5 + math.sin(ang) * saturation * 0.5, 0)
+slide.Position = UDim2.new(1 - value, 0, 0.5, 0)
+valueGradient.Color = ColorSequence.new(fromHSV(hue, saturation, 1), Color3.fromRGB(0, 0, 0))
 end
-local function padLocal(px, py)
-local fx = svPad.AbsoluteSize.X / PAD_SIZE
-local fy = svPad.AbsoluteSize.Y / PAD_SIZE
-if fx <= 0 then fx = 1 end
-if fy <= 0 then fy = 1 end
-return (px - svPad.AbsolutePosition.X) / fx, (py - svPad.AbsolutePosition.Y) / fy
-end
-local function UpdatePad(px, py)
-local lx, ly = padLocal(px, py)
-saturation = clamp01((lx - PAD_MARGIN) / PAD_TRAVEL)
-value = 1 - clamp01((ly - PAD_MARGIN) / PAD_TRAVEL)
+local function UpdateRing(px, py)
+local cx = wheelCircle.AbsolutePosition.X + wheelCircle.AbsoluteSize.X / 2
+local cy = wheelCircle.AbsolutePosition.Y + wheelCircle.AbsoluteSize.Y / 2
+local dx = px - cx
+local dy = py - cy
+local r = wheelCircle.AbsoluteSize.X / 2
+if r <= 0 then r = 1 end
+local dist = math.min(math.sqrt(dx * dx + dy * dy), r)
+local ang = math.atan2(dy, dx)
+if ang < 0 then ang = ang + 2 * math.pi end
+hue = ang / (2 * math.pi)
+saturation = dist / r
 setHandles()
 update()
 end
-local function UpdateHue(px)
-hue = clamp01((px - hueBar.AbsolutePosition.X) / math.max(hueBar.AbsoluteSize.X, 1))
+local function UpdateSlide(px)
+local w = valueBar.AbsoluteSize.X
+if w <= 0 then w = 1 end
+local t = clamp01((px - valueBar.AbsolutePosition.X) / w)
+value = 1 - t
 setHandles()
 update()
 end
-svPad.InputBegan:Connect(function(input)
+local function UpdateRingFromHSV()
+setHandles()
+end
+local function UpdateSlideFromValue()
+setHandles()
+end
+wheelCircle.InputBegan:Connect(function(input)
 if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
-PadDown = true
-UpdatePad(input.Position.X, input.Position.Y)
+WheelDown = true
+UpdateRing(input.Position.X, input.Position.Y)
 end
 end)
-svPad.InputEnded:Connect(function(input)
+wheelCircle.InputEnded:Connect(function(input)
 if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
-PadDown = false
+WheelDown = false
 end
 end)
-hueBar.InputBegan:Connect(function(input)
+valueBar.InputBegan:Connect(function(input)
 if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
-HueDown = true
-UpdateHue(input.Position.X)
+SlideDown = true
+UpdateSlide(input.Position.X)
 end
 end)
-hueBar.InputEnded:Connect(function(input)
+valueBar.InputEnded:Connect(function(input)
 if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
-HueDown = false
+SlideDown = false
 end
 end)
 UserInputService.InputChanged:Connect(function(input)
 if input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch then
-if PadDown then
-UpdatePad(Mouse.X, Mouse.Y)
-elseif HueDown then
-UpdateHue(Mouse.X)
+if WheelDown then
+UpdateRing(Mouse.X, Mouse.Y)
+elseif SlideDown then
+UpdateSlide(Mouse.X)
 end
 end
 end)
@@ -3541,6 +3409,7 @@ end)
 updateFromSettings()
 function ColorpickerFunctions:UpdateName(New)
 colorpickerName.Text = New
+paragraphHeader.Text = New
 end
 function ColorpickerFunctions:SetVisibility(State)
 colorpicker.Visible = State
@@ -3994,7 +3863,7 @@ notification.Name = "Notification"
 notification.AnchorPoint = Vector2.new(0.5, 0.5)
 notification.AutomaticSize = Enum.AutomaticSize.Y
 notification.BackgroundColor3 = Color3.fromRGB(15, 15, 15)
-notification.BackgroundTransparency = 0.2
+notification.BackgroundTransparency = 0
 notification.BorderColor3 = Color3.fromRGB(0, 0, 0)
 notification.BorderSizePixel = 0
 notification.Position = UDim2.fromScale(0.5, 0.5)
